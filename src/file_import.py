@@ -61,32 +61,6 @@ def makeAllDicts(openedFile):
     print 'Finished creating dictionary of dictionaries!'
     return fullDict
 
-def newDictionary(name):
-    '''
-    This function is retired and replaced by the makeAllDicts function above.
-    
-    Standard function to make a dictionary from each of the tables in the import file.
-    Assumes that, when invoked, currLine is the 1-term line identifying a new table/dataset
-    '''
-    newDict = {}
-    if len(currLine.split(',')) <> 1:
-        print "Problem with line:", currLine, "\n", "This line is not the beginning of a new dataset!"
-        print name, "dictionary not populated!"
-        return newDict, currLine
-    print "Making", name, "dictionary with", currLine, "data"
-    nextLine = impFile.readline().strip() ##At this point, should be the "legend" for the table
-    numValues = len(nextLine.split(',')) - 1 ##Get number of values. First value will be the key, others are values, hence the '-1'
-    splitCurr = nextLine.split(',',numValues) ##Use numValues as "maxsplit" to make sure that commas in the final column don't cause unwanted splits
-    while len(splitCurr)>1:
-        for (n,i) in enumerate(splitCurr):
-            if i.isdigit(): ##then i is a number
-                splitCurr[n] = int(i) ##convert i to an integer
-        newDict[(splitCurr[0])] = splitCurr[1:]
-        nextLine = impFile.readline().strip()
-        splitCurr = nextLine.split(',',numValues)
-    print "Finished with", name, "dictionary"
-    return newDict, nextLine
-
 def rawGetDateTime (itemList, yearIndex):
     '''
     Feed a list (itemList, presumably the value returned from a dictionary created from the Prim8 import file), and the index (yearIndex) where the "Year" value is stored.
@@ -336,14 +310,6 @@ if __name__ == '__main__':
     ##impPath = askopenfilename(filetypes=(('Comma-separated','*.csv'),('All files','*.*')), title='Select a file to import:')
     impFile = open(impPath, 'r')
     ##impFile = open('./../import_test.csv', 'r')
-
-    ##print "Initialize current line"
-    ##currLine = impFile.readline().strip()
-
-    ##Import all data tables into the allData dictionary
-    ##for table in tableList:
-      ##  allData[table], currLine = newDictionary(table)
-        ##print "The", table, "table is \n", allData[table] ##Confirms that the correct data went to the table names provided in tableList
 
     print "Creating allData dictionary"
     allData = makeAllDicts(impFile)
