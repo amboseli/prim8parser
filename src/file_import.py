@@ -57,7 +57,7 @@ def makeAllDicts(openedFile):
                 if item.isdigit(): ##then item is a number and shouldn't stay a string
                     line[x] = int(item)
             fullDict[currentDict][line[0]] = line[1:] ##Set the first column of the data as the key, everything else as the value
-            print 'Added', line[1:], "to", currentDict, 'with key #', line[0]
+            ##print 'Added', line[1:], "to", currentDict, 'with key #', line[0]
     print 'Finished creating dictionary of dictionaries!'
     return fullDict
 
@@ -154,7 +154,6 @@ def writeInstance(dayTime, eventKey):
     Returns the string that can be written to the outFile.
     '''
     global allData, neighborAbbrev, instances_modifiers, foodsLong, foodsShort, observer
-    print "Begin writing data from line", allData['behaviorinstances']
     outList = [] ##List of strings that will be joined together
     ##observer = allData['observers'][(allData['behaviorinstances'][eventKey][9])][2]
     ##outList.append(observer.upper())
