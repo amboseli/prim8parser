@@ -81,8 +81,6 @@ def errorCheck (inFilePath, outFilePath, guiName):
     outMsg = str(len(notes)) + ' free-form text notes recorded.'
     outFile.write(outMsg + '\n')
     
-    ##NEED TO ADD A CHECK IF >1 group was sampled in a single day
-    
     outFile.write('\nErrors and alerts:\n')
     
     ##Check for the same individual being sampled more than once on the same day
@@ -106,6 +104,11 @@ def errorCheck (inFilePath, outFilePath, guiName):
         outMsg = 'No duplicate (sname, date) focal samples!'
         print outMsg
         outFile.write(outMsg + '\n')
+    
+    ##Check if >1 group was sampled in a single day
+    outFile.write('\n')
+    
+    
     
     ##Check for multiple or unusual observers
     ##Because of the way we added observer when parsing the prim8 import file, the same "observer" value is used for all lines.
@@ -143,7 +146,7 @@ def errorCheck (inFilePath, outFilePath, guiName):
                 outFile.write(alertMsg + '\n')
             numNeighbors = 0
             if numPoints > 10:
-                alertMsg = 'Line ' + currentFocLine + ': ' + str(numPoints) + ' points recorded for ' + currentFocTime + ' focal sample. Maximum 10 allowed.'
+                alertMsg = 'Line ' + str(currentFocLine) + ': ' + str(numPoints) + ' points recorded for ' + currentFocTime + ' focal sample. Maximum 10 allowed.'
                 print alertMsg
                 outFile.write(alertMsg + '\n')
             numPoints = 0
