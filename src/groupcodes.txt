@@ -1,0 +1,18 @@
+1.211	acacia's	ACA	acacia
+6.200	ceejay's	CEE	ceejay
+1.221	dibble's	DIB	dibble
+1.110	hokey's	HOK	hokey
+6.100	jill's	JIL	jill
+2.210	kelly's	KEL	kelly
+2.211	kelly's a	KEA	kelly a
+2.212	kelly's b	KEB	kelly b
+2.120	mica's	MIC	mica
+2.110	narasha's	NAR	narasha
+5.000	olkenya	OLK	olkenya
+13.100	sinya a	SIA	sinya a
+13.210	sinya b1	SB1	sinya b1
+13.220	sinya b2	SB2	sinya b2
+13.000	sinya groups	SIN	sinya groups
+1.120	snap's	SNA	snap
+9.000	unknown	UNK	unknown
+1.222	vogue's	VOG	vogue

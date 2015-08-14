@@ -1,0 +1,71 @@
+ABB	Abutelon blossoms
+ABF	Abutelon fruits
+ADG	Acacia drepanalobium gum
+ATF	Azima tetracantha fruits
+ATL	Azima tetracantha leaves
+ATX	Azima tetracantha unknown part
+BGF	Balanites grabla fruit
+CDL	Cynodon dactylon leaves
+CMF	Comia monoica (sandpaper plant) fruits
+CTF	Capparis tomentosa fruit
+EDJ	Juice from elephant dung
+ESF	Euclea shimperi fruit
+FTB	Fever tree blossoms
+FTD	Fever tree seeds
+FTG	Fever tree gum
+FTK	Fever tree bark
+FTL	Fever tree leaves
+FTP	Fever tree pods
+FTX	Fever tree unknown part
+GAR	Garbage
+GRC	Grass corms of other or unknown species
+GRD	Grass seed head
+GRL	Grass leaves of other or unknown species
+GRT	Grass blade bases
+MCF	Maerua crassifolia fruits
+NVR	Invertebrate
+OTH	Other (formerly a 4-letter code, Othr)
+PCM	Mother's milk
+RMB	Ramphicarpa montana blossoms
+RMF	Ramphicarpa montana fruits
+RML	Ramphicarpa montana leaves
+RNF	Rhus natalensis fruit
+SCL	Sporobolus consimilis leaves
+SCT	Sporobolus consimilis blade bases
+SDF	Solanum dubium fruits
+SFF	Commicarpus fruits
+SKC	Sporobolus kentrophyllus corms
+SMF	Scutia myrtina fruits
+SPF	Salvadora persica fruits
+SPL	Salvadora persica leaves
+SUL	Suaeda leaves
+TCF	Trianthema ceratosepala fruits
+TCL	Trianthema ceratosepala leaves
+TCX	Trianthema ceratosepala unknown part
+TFB	Lyceum blossoms
+TFF	Lyceum fruits
+TFL	Lyceum leaves
+TFX	Lyceum unknown part
+TOB	Tortilis blossoms
+TOD	Tortilis seeds
+TOG	Tortilis gum
+TOL	Tortilis leaves
+TOP	Tortilis pods
+TOX	Tortilis unknown part
+TTB	Tribulus terrestris blossoms
+TTF	Tribulus terrestris fruits
+TTL	Tribulus terrestris leaves
+TTX	Tribulus terrestris unknown part
+UNK	Unknown
+VRT	Vertebrate
+WAX	Water
+WSF	Withania fruits
+XXB	Other or unknown blossoms
+XXC	Other or unknown corms
+XXD	In or under dung, or other or unknown seed
+XXF	Other or unknown fruits
+XXG	Other or unknown gum
+XXK	Other or unknown bark
+XXL	Other or unknown leaves
+XXP	Other or unknown pods
+XXR	Other or unknown roots

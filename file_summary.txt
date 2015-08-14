@@ -1,0 +1,22 @@
+2015-08-12 12:23:32 analysis of file /Users/jg177/Documents/Eclipse Workspaces/workspace/Prim8_Data_Reader/output_test.txt
+
+Data begins at 2015-07-28 15:26:02 and ends at 2015-07-29 11:25:38
+
+207 total data lines recorded.
+30 points recorded during 5 focal samples.
+103 ad-lib interactions recorded.
+3 free-form text notes recorded.
+
+Errors and alerts:
+
+No duplicate (sname, date) focal samples!
+
+Observer looks OK!
+
+Line 41: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:25:44', 'WAJ', 'OS', 'NULL']
+Line 44: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:28:18', 'NAP', 'OS', 'NULL']
+Line 54: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:39:39', 'LAH', 'G', 'NULL']
+Line 55: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:39:47', 'LAH', 'G', 'NULL']
+Line 56: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:40:27', 'LAH', 'G', 'NULL']
+Line 57: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:40:42', 'LAH', 'G', 'NULL']
+Line 192: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '11:16:01', 'ROW', 'DS', 'NULL']
