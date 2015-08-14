@@ -50,7 +50,7 @@ def makeAllDicts(openedFile):
                 print "Problem at line", (n+1), ":", line[0], " is not a recognized table name"
                 fullDict = {} ##Empty the dictionary, to essentially halt any processes that may come after
                 return fullDict 
-            print 'Finished with', currentDict, 'dictionary. Begin', line[0], 'dictionary.'
+            print 'Begin', line[0], 'dictionary.'
             currentDict = line[0]
         else: ##Line should be actual data to add to a table
             for x,item in enumerate(line): ##Check for numbers that are saved as strings
