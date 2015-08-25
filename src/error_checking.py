@@ -35,6 +35,8 @@ def errorCheck (inFilePath, outFilePath, guiName):
     To be used in a GUI, guiName.  Quits the GUI at end of function. 
     Prints a message that the process is complete.
     Returns nothing.
+    
+    Consider breaking this up into some smaller functions?  Maybe run the counts and by-line analyses for each date instead of just once for everything?  Another day.
     '''
     ##Declare constants
     focalCode = 'HDR'
@@ -58,7 +60,7 @@ def errorCheck (inFilePath, outFilePath, guiName):
        
     print "Adding all lines to allEvents list"
     allEvents =  [line.strip().split('\t') for line in impEvents] ##List of all lines read from the import file (impFile)
-    allEvents.pop(0) ##Remove the "Parsed data... line at the top"
+    allEvents.pop(0) ##Remove the "Parsed data..." line at the top
     
     firstEventTime = getDateTime(allEvents[0], 2, 3).strftime('%Y-%m-%d %H:%M:%S')
     lastEventTime = getDateTime(allEvents[-1], 2, 3).strftime('%Y-%m-%d %H:%M:%S')
@@ -84,11 +86,10 @@ def errorCheck (inFilePath, outFilePath, guiName):
     outFile.write('\nErrors and alerts:\n')
     
     ##Check for the same individual being sampled more than once on the same day
-    outFile.write('\n')
-    focalDatesNames = [(focal[2],focal[5]) for focal in focals] ##Make list of (date (as string), sname) tuples of all focals
+    focalInfo = [(focal[2],focal[5]) for focal in focals] ##Make list of (date (as string), sname) tuples of all focals
     duplicateFocals = set() ##Will store any duplicate (date, sname) focals.
-    for focal in focalDatesNames:
-        if focalDatesNames.count(focal) > 1:
+    for focal in focalInfo:
+        if focalInfo.count(focal) > 1:
             duplicateFocals.add(focal)
     if len(duplicateFocals) > 0 :
         outMsg = "Found duplicate focal samples:" 
@@ -100,31 +101,30 @@ def errorCheck (inFilePath, outFilePath, guiName):
             outMsg = '\t' + str(dupFocal)
             print outMsg
             outFile.write(outMsg + '\n')
-    else:
-        outMsg = 'No duplicate (sname, date) focal samples!'
-        print outMsg
-        outFile.write(outMsg + '\n')
     
-    ##Check if >1 group was sampled in a single day
-    outFile.write('\n')
-    
-    
-    
+    ##Check if >1 group was sampled in a single day.
+    focalInfoSet = set([(focal[2],focal[4]) for focal in focals]) ##Set of (date (as string), group) tuples from all focals
+    dateCountDict = {}
+    for (focalDate, focalGrp) in focalInfoSet:
+        if focalDate not in dateCountDict:
+            dateCountDict[focalDate] = [focalGrp] 
+        else:
+            dateCountDict[focalDate].append(focalGrp)
+    for (k,v) in dateCountDict.iteritems():
+        if len(v) > 1:
+            outMsg = "Found multiple groups sampled on same day: " + k + " , in " + ",".join(v)
+            print outMsg
+            outFile.write(outMsg + '\n')
+
     ##Check for multiple or unusual observers
     ##Because of the way we added observer when parsing the prim8 import file, the same "observer" value is used for all lines.
     ##So we need only look at one line, not iterate through everything.
-    outFile.write('\n')
     if len(allEvents[0][1]) != 3: ##then the "observer" isn't simply someone's three-letter initials.
         outMsg = 'Unusual observer recorded: ' + allEvents[0][1]
         print outMsg
         outFile.write(outMsg + '\n')
-    else:
-        outMsg = 'Observer looks OK!'
-        print outMsg
-        outFile.write(outMsg + '\n') 
-            
-    outFile.write('\n')
     
+    outFile.write('\n')
     ##Initialize some variables that will be used to determine how to analyze many of the lines in allEvents
     isFocal = False ##Indicates if the current line being checked was during a focal sample. Will be toggled TRUE<-->FALSE a lot while iterating through allEvents.
     focalEndTime = datetime.strptime('1909-01-01 01:01:01', '%Y-%m-%d %H:%M:%S') ##Indicates when the current focal is supposed to end. The 1909 time is a placeholder.
