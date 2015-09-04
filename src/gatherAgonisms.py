@@ -5,8 +5,6 @@ Code used to compile agonisms from multiple files into a single list.
 
 Ideally, run this code with a GUI.
 
-
-
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 
