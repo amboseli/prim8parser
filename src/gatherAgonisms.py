@@ -7,7 +7,7 @@ Ideally, run this code with a GUI.
 
 
 
-@author: jg177
+@author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 
 agonismCodes = ['AS', 'OS', 'DS']

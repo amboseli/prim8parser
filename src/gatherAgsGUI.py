@@ -1,7 +1,7 @@
 '''
 Created on 2 Sep 2015
 
-@author: jg177
+@author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 from Tkinter import *
 from tkFileDialog import askopenfilename, asksaveasfilename

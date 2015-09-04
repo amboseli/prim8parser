@@ -1,7 +1,7 @@
 '''
 Created on 6 Aug 2015
 
-@author: Jake Gordon
+@author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 
 from datetime import datetime
