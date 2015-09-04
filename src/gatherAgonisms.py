@@ -8,7 +8,7 @@ Ideally, run this code with a GUI.
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 
-agonismCodes = ['AS', 'OS', 'DS']
+from constants import agonismCodes
 
 def getAgonismsFromFile(filePath, minDate, maxDate, behaviorCodes = agonismCodes):
     '''

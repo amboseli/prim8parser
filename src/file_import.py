@@ -6,99 +6,8 @@ Created on 29 Jul 2015
 from datetime import datetime, timedelta
 from Tkinter import *
 from tkFileDialog import askopenfilename, asksaveasfilename
-from cleanRawFile import cleanInputData
-
-def makeAllDicts(openedFile):
-    '''
-    Given an opened file, reads processes the data into a dictionary of dictionaries.  Each of the "inner" dictionaries is essentially one "table" of data from the input file.
-    Closes the opened file.
-    The names of each of the "inner" dictionaries is given by the local list, "tableList".
-    Returns the dictionary of dictionaries.
-    '''
-    allLines = cleanInputData(openedFile) ##Closes file
-    
-    fullDict = {} ##The big, bad dictionary of dictionaries returned by this function
-    
-    ##These NEED to be spelled the same way as they are in the data file.  Case sensitive.  Order in this list is not important, however.
-    tableList = ['adlib', 'sites', 'observers', 'groups','species','individuals', 'biologicalsamples','coordinatesystem','locations','workcalendars','behaviortypes','behaviors','focalfollows','scans','behaviorinstances','focalbehaviors','scanbehaviors','modifiers'] 
-    
-    for table in tableList: ##Create a bunch of empty dictionaries, with names from tableList
-        fullDict[table] = {}
-    
-    currentDictName = tableList[0] ##Used in the below "for" loop, to indicate which dictionary to add all the data
-    for n,line in enumerate(allLines): ##Enumerating and adding n to allow the return of line numbers in case there's an error
-        ##TODO: Change the way line number is returned. If the input file has any spurious newline characters, then n does not accurately indicate line number in the original file.
-        if len(line) == 1: ##Then the line should indicate the beginning of a new table.  Until a new table starts, all following lines should be added to the dictionary of this name.
-            if line[0] not in tableList: ##Then there's a problem in the file
-                print "Problem at line", (n+1), ":", line[0], " is not a recognized table name"
-                fullDict = {} ##Empty the dictionary, to essentially halt any processes that may come after
-                return fullDict
-            print 'Begin', line[0], 'dictionary.'
-            currentDictName = line[0]
-        else: ##Line should be actual data to add to a table
-            for x,item in enumerate(line): ##Check for numbers that are saved as strings
-                if item.isdigit(): ##then item is a number and shouldn't stay a string
-                    line[x] = int(item)
-            fullDict[currentDictName][line[0]] = line[1:] ##Set the first column of the data as the key, everything else as the value
-            ##print 'Added', line[1:], "to", currentDictName, 'with key #', line[0]
-    print 'Finished creating dictionary of dictionaries!'
-    return fullDict
-
-def rawGetDateTime (itemList, yearIndex):
-    '''
-    Feed a list (itemList, presumably the value returned from a dictionary created from the Prim8 import file), and the index (yearIndex) where the "Year" value is stored.
-    (Assumes that "Year" is followed by Month, Day, Time)
-    Outputs the date and time as a single "datetime" object.
-    '''
-    ##print "Making date/time beginning at", itemList[yearIndex], "from list", itemList
-    thisYear = itemList[yearIndex]
-    thisMonth = itemList[yearIndex+1]
-    thisDay = itemList[yearIndex+2]
-    timeList = itemList[yearIndex+3].split(":")
-    thisHour = int(timeList[0])
-    thisMinute = int(timeList[1])
-    thisSecond = int(timeList[2])
-    outDateTime = datetime(thisYear, thisMonth, thisDay, thisHour, thisMinute, thisSecond)
-    ##print "Date/time is", outDateTime
-    return outDateTime
-
-def getYearIndex (someDictionary):
-    '''
-    Given a dictionary where: (these are assumptions, not checked-for in the code)
-        1) all the values are lists of strings
-        2) all but one of the keys are integers
-        3) the one non-integer key is a "legend" that defines the other values
-        4) (preferably) one of the items in the "legend" values == "Year"
-    Return the index in the list of strings where the "Year" value occurs.  Or -1.
-    '''
-    dictKeys = sorted(someDictionary.keys()) ##Get all the keys, and sort them
-    keyTableLegend = dictKeys[-1] ##When sorted, the one non-integer key will be after all the integers
-    tableLegend = someDictionary[keyTableLegend]
-    index = 0
-    for i in tableLegend:
-        if i.lower() == 'year':
-            return index
-        else:
-            index += 1
-    return -1
-
-def addEventKeys (targetList, sourceDictionary, dictName):
-    '''
-    Given a dictionary (sourceDictionary) to read from, adds (datetime, dictName, dictionary key) tuples to the targetList.
-    Used to combine data ("events") of different types together into a single list that can easily be sorted by time.  
-    Returns the appended list. (or, if there were no data in targetList to add, returns the unappended list)  
-    '''
-    ##Get and sort all the keys in the dictionary. Except for the "legend", these should just be ID numbers.
-    eventKeys = sorted(sourceDictionary.keys())
-    if len(eventKeys) == 0: ##Then there were no events recorded in the given table. 
-        return targetList
-    eventKeys.pop() ##Remove the table "legend". As the only non-integer key, it will be last in the sorted list.
-    for i in eventKeys:
-        yrIdx = getYearIndex(sourceDictionary)
-        eventDateTime = rawGetDateTime(sourceDictionary[i], yrIdx)
-        finalInfo = (eventDateTime, dictName, i) 
-        targetList.append(finalInfo)
-    return targetList
+from cleanRawFile import *
+from constants import *
 
 def prim8VersionInput():
     global prim8Version, master, impPath, outPath
@@ -108,42 +17,7 @@ def prim8VersionInput():
     master.quit()
     print "Closed tk window"
     
-def getCodes(codeFile, longIndex, shortIndex):
-    '''
-    Given a tab-delimited txt file codeFile, adds the short and long codes to two separate lists: one list for short codes, one for long codes.
-    The "long" code in codeFile is at the (longIndex)'th index in each line (assuming the line is split).
-    The "short" code in codeFile is at the (shortIndex)'th index in each line (assuming the line is split).
-    Codes will be added to both lists simultaneously, so longList[n] will correspond to shortList[n].
-    Returns two lists: first the one with long codes, then the one with short codes.
-    
-    Intended for cases like group names and food codes, where names/values used in Prim8 don't quite align with what we use in Babase.
-    '''
-    longCodes = []
-    shortCodes = []
-    allCodes = codeFile.readlines()
-    for code in allCodes:
-        cleanCode = code.strip().split("\t")
-        longCodes.append(cleanCode[longIndex].upper())
-        shortCodes.append(cleanCode[shortIndex].upper())
-    print "Finished getting codes"
-    return longCodes, shortCodes
 
-def getObserver(masterDict, eventKey):
-    '''
-    Given masterDict, a dictionary of dictionaries whose contents include dictionaries called "observers" and "behaviorinstances",
-    and eventKey, an integer representing a key in the "behaviorinstances" dictionary.
-    Returns the initials of the observer (a string) who recorded the instance referred-to by eventKey.
-    '''
-    return masterDict['observers'][(allData['behaviorinstances'][eventKey][9])][2]
-
-def multipleObservers(masterDict):
-    '''
-    Given the big main dictionary of dictionaries masterDict, which is assumed to contain a "observers" dictionary.
-    Checks if more than one observer's initials are used.
-    Returns True (yes, more than one observer) or False (0-1 observers).
-    '''
-    obs = [value[2] for (key, value) in masterDict['observers'].iteritems() if type(key) == int]
-    return len(obs) > 2
 
 def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     '''
@@ -155,7 +29,7 @@ def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     instanceObserver is the optional string of the observer's initials to use in the data.  If not given, observer will be looked-up in masterDict.
     Returns a tuple, the string that can be written to the outFile, and the "observer" string.
     '''
-    global neighborAbbrev, instances_modifiers, foodsLong, foodsShort
+    global instances_modifiers, foodsLong, foodsShort
     outList = [] ##List of strings that will be joined together
     eventTypeID =  masterDict['behaviors'][(masterDict['behaviorinstances'][eventKey][1])][7] ##Look up behavior type id
     eventType = masterDict['behaviortypes'][eventTypeID][1] ##Using behavior type id, get the actual abbrev for that behavior type
@@ -311,15 +185,11 @@ def writeAll(outputFile, eventList, appVersion, masterDict):
     return 'Finished writing all data!'
 
 if __name__ == '__main__':
-    ##Declare constants
-    focalAbbrev = 'HDR' ##Abbreviation for output file to indicate that the line begins a new focal sample
-    neighborAbbrev = 'NGH' ##Abbreviation for output file to indicate that the line is a focal neighbor
-    noteAbbrev = 'TXT' ##Abbreviation for output file to indicate that the line is freeform text
 
     ##Declare important global variables
     impPath = '' ##File path for the import file
     outPath = '' ##File path for the output file
-    prim8Version = '1.150510'
+
     allData = {} ##Dictionary of dictionaries to be created from the import file
     noteList = [] ##List for (datetime, dictionary name, dictionary key) tuples for every line that we want recorded in the final output sheet
     instances_modifiers = {} ##Dictionary to note all the behavior instances where modifiers were also recorded (presumably only neighbor lines and points with food codes)
@@ -327,9 +197,6 @@ if __name__ == '__main__':
     foodsShort = [] ##List for food codes.  This will hold the short name, e.g. "GRC".
     groupsLong = [] ##List for group names. This will hold the spelled-out name, as it was provided to the Prim8 app, e.g. "acacia" for Acacia's group
     groupsShort = [] ##List for group names. This will hold the abbreviation for the group's name, e.g. "ACA" for Acacia's group
-
-    ##These NEED to be listed in the order they appear in the import file, and NEED to be spelled the same way as they are in the data file.
-    tableList = ['adlib', 'sites', 'observers', 'groups','species','individuals', 'biologicalsamples','coordinatesystems','locations','workcalendars','behaviortypes','behaviors','focalfollows','scans','behaviorinstances','focalbehaviors','scanbehaviors','modifiers'] 
 
     ##Make a GUI to select import and export file names/locations
     master = Tk()
@@ -353,38 +220,25 @@ if __name__ == '__main__':
 
     master.mainloop()
 
-    print "Opening import file"
+    ##print "Opening import file"
     ##impPath = askopenfilename(filetypes=(('Comma-separated','*.csv'),('All files','*.*')), title='Select a file to import:')
-    impFile = open(impPath, 'r')
+    ##impFile = open(impPath, 'r')
     ##impFile = open('./../import_test.csv', 'r')
 
     print "Creating allData dictionary"
-    allData = makeAllDicts(impFile)
-
+    allData = makeAllDicts(impPath)
 
     ##Populate the noteList with all the different behaviors and notes that we want recorded.
     ##Having them all in one list helps us sort different kinds of data chronologically.
 
-    noteList = addEventKeys(noteList, allData['behaviorinstances'], 'behaviorinstances') ##Add all the observed behaviors
-    noteList = addEventKeys(noteList, allData['adlib'], 'adlib') ##Add any "adlib" notes (not the ABRP kind of "adlibs". Those are included in "instances")
-    noteList = addEventKeys(noteList, allData['focalfollows'], 'focalfollows') ##Add the focal follow information. These will be similar to the "header" rows from the old Psion format.
+    noteList = getAllObservations(allData)
 
-    noteList.sort() ##Make the list chronological
-
-    ##Populate the instances_modifiers dictionary 
-    ##Keys are the behavior_instancesid's from the modifiers table, values are the modifiers_id
-    modifierIDs = sorted(allData['modifiers'].keys()) ##Get list of all the modifiers_id's
-    modifierIDs.pop()  ##Remove the key for the modifiers table "legend"
-    for i in modifierIDs:
-        instance_id = allData['modifiers'][i][0]
-        instances_modifiers[instance_id] = i
-    print "Dictionary instances_modifiers populated"
 
     ##Get the food codes, so we can note the short name, not the long one.
-    foodsLong, foodsShort = getCodes(open('./foodcodes.txt','r'), 1, 0)
+    foodsLong, foodsShort = getCodes('./foodcodes.txt', 1, 0)
 
     ##Get a corrected list of group names, because prim8 doesn't comprehend group names with apostrophes. E.g. we want "ACA", not "acacia".  Prim8 can't handle "acacia's".
-    groupsLong, groupsShort = getCodes(open('./groupcodes.txt', 'r'), 3, 2)
+    groupsLong, groupsShort = getCodes('./groupcodes.txt', 3, 2)
 
     print "Creating export file"
     ##outPath = asksaveasfilename(defaultextension='.txt', title='Name of the exported data file?')
