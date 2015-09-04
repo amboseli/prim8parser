@@ -1,7 +1,7 @@
 '''
 Created on 27 Aug 2015
 
-@author: jg177
+@author: Jake Gordon, <jacob.b.gordon@gmail.com>
 
     Functions used to clean and process data from the prim8 import file into data usable by the rest of the program.
 
