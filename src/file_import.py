@@ -6,7 +6,7 @@ Created on 29 Jul 2015
 from datetime import datetime, timedelta
 from Tkinter import *
 from tkFileDialog import askopenfilename, asksaveasfilename
-from cleanInputFile import cleanInputData
+from cleanRawFile import cleanInputData
 
 def makeAllDicts(openedFile):
     '''
