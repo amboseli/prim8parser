@@ -217,6 +217,26 @@ def multipleObservers(masterDict):
     obs = [value[2] for (key, value) in masterDict[p8observers].iteritems() if type(key) == int]
     return len(obs) > 1
 
+def getGroupAbbrev(masterDict, grpIDNum):
+    '''
+    masterDict is the big main dictionary of dictionaries, which is assumed to contain a "groups" dictionary.
+    grpIDNum is an integer and a key in the "groups" dictionary.
+    
+    Uses the getCodes function to parse out the group abbreviations preferred by Babase.
+    Returns a string: the Babase-preferred group abbreviation, or the name used in prim8 if a Babase-preferred abbreviation isn't found.     
+    '''
+    from constants import p8groups
+    
+    ##Get a corrected list of group names, because prim8 doesn't comprehend group names with apostrophes. E.g. we want "ACA", not "acacia".  Prim8 can't handle "acacia's".
+    groupsLong, groupsShort = getCodes('./groupcodes.txt', 3, 2)
+        
+    currentGrpName = (masterDict[p8groups][grpIDNum][0])  ##Get group name
+    if currentGrpName.upper() in groupsLong: ##This _should_ be always true
+        grpIndex = groupsLong.index(currentGrpName.upper())
+        print ("Replacing group name '" + currentGrpName + "' with '" + groupsShort[grpIndex] + "'")
+        currentGrpName = groupsShort[grpIndex]
+    return currentGrpName
+
 def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     '''
     Parses data for a line from the behavior_instances table and adds it together to a list.
@@ -243,6 +263,9 @@ def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     outList.append(observer.upper())
     outList.append(dayTime.date().isoformat())  ##Add date  
     outList.append(dayTime.time().isoformat()) ##then time
+    currentGrpID = masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][0])][4] ##Get group ID number, based on the residence of the actor
+    currentGrpName = getGroupAbbrev(masterDict, currentGrpID)
+    outList.append(currentGrpName.upper())
     actorID = masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][0])][1] ##Get actor
     outList.append(actorID.upper())
     actID = masterDict[p8behaviors][(masterDict[p8behaviorinstances][eventKey][1])][1]  ##Get act
@@ -275,10 +298,7 @@ def writeFocalFollow(dayTime, eventKey, masterDict, focalObserver):
     focalObserver is a string, representing the initials of the observer of the focal sample.
     Returns the string that can be written to the outFile.
     '''
-    from constants import p8individuals, p8focalfollows, focalAbbrev, p8groups
-    
-    ##Get a corrected list of group names, because prim8 doesn't comprehend group names with apostrophes. E.g. we want "ACA", not "acacia".  Prim8 can't handle "acacia's".
-    groupsLong, groupsShort = getCodes('./groupcodes.txt', 3, 2)
+    from constants import p8individuals, p8focalfollows, focalAbbrev
     
     outList = [] ##List of strings that will be joined together
     
@@ -287,11 +307,7 @@ def writeFocalFollow(dayTime, eventKey, masterDict, focalObserver):
     outList.append(dayTime.date().isoformat())  ##Add date  
     outList.append(dayTime.time().isoformat()) ##then time
     focalGrpID = masterDict[p8individuals][(masterDict[p8focalfollows][eventKey][0])][4] ##Get group ID number, based on the residence of the focal individual
-    focalGrpName = (masterDict[p8groups][focalGrpID][0])  ##Get group name
-    if focalGrpName.upper() in groupsLong: ##This _should_ be always true
-        grpIndex = groupsLong.index(focalGrpName.upper())
-        print ("Replacing group name '" + focalGrpName + "' with '" + groupsShort[grpIndex] + "'")
-        focalGrpName = groupsShort[grpIndex]
+    focalGrpName = getGroupAbbrev(masterDict, focalGrpID)
     outList.append(focalGrpName.upper())
     focalID = masterDict[p8individuals][(masterDict[p8focalfollows][eventKey][0])][1]
     outList.append(focalID.upper())

@@ -38,14 +38,7 @@ def errorCheck (inFilePath, outFilePath, guiName):
     
     Consider breaking this up into some smaller functions?  Maybe run the counts and by-line analyses for each date instead of just once for everything?  Another day.
     '''
-    ##Declare constants
-    focalCode = 'HDR'
-    pointCode = 'PNT'
-    neighborCode = 'NGH'
-    adlibCode = 'ADL'
-    noteCode ='TXT'
-    emptyValue = 'NULL'
-    outOfSightValue = 'OOS'
+    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, adlibAbbrev, noteAbbrev, emptyAbbrev, outOfSightValue
     
     print "Creating export file"
     outFile = open(outFilePath,'w')
@@ -70,16 +63,16 @@ def errorCheck (inFilePath, outFilePath, guiName):
     outMsg = str(len(allEvents)) + ' total data lines recorded.'
     outFile.write(outMsg + '\n')
     
-    focals = [line for line in allEvents if line[0] == focalCode] ##List of all the lines that begin new focals, i.e. the "HDR" lines. Will be useful for adding data to SAMPLES.
-    points = [line for line in allEvents if line[0] == pointCode] ##List of all the PNT lines
+    focals = [line for line in allEvents if line[0] == focalAbbrev] ##List of all the lines that begin new focals, i.e. the "HDR" lines. Will be useful for adding data to SAMPLES.
+    points = [line for line in allEvents if line[0] == pntAbbrev] ##List of all the PNT lines
     outMsg = str(len(points)) + ' points recorded during ' + str(len(focals)) + ' focal samples.'
     outFile.write(outMsg + '\n')
     
-    adlibs = [line for line in allEvents if line[0] == adlibCode] ##List of all the lines that are adlibs, i.e. groomings and agonisms.
+    adlibs = [line for line in allEvents if line[0] == adlibAbbrev] ##List of all the lines that are adlibs, i.e. groomings and agonisms.
     outMsg = str(len(adlibs)) + ' ad-lib interactions recorded.'
     outFile.write(outMsg + '\n')
     
-    notes = [line for line in allEvents if line[0] == noteCode] ##List of all the lines that are text notes.
+    notes = [line for line in allEvents if line[0] == noteAbbrev] ##List of all the lines that are text notes.
     outMsg = str(len(notes)) + ' free-form text notes recorded.'
     outFile.write(outMsg + '\n')
     
@@ -155,7 +148,7 @@ def errorCheck (inFilePath, outFilePath, guiName):
             currentPntTime = ''
             currentPntLine = 0
             currentPntActivity = ''
-        if line[0] == focalCode:
+        if line[0] == focalAbbrev:
             isFocal = True
             numNeighbors = 0 ##Pretty sure this will already be true, but just in case
             numPoints = 0 ##Pretty sure this will already be true, but just in case
@@ -165,7 +158,7 @@ def errorCheck (inFilePath, outFilePath, guiName):
             currentPntTime = ''
             currentPntLine = 0
             currentPntActivity = ''
-        elif line[0] == pointCode:
+        elif line[0] == pntAbbrev:
             if not isFocal: ##Then this point was somehow recorded outside the duration of a focal (Pretty sure Prim8 forbids this)
                 alertMsg = 'Line ' + str(n+2) + ": PNT sample outside of a focal sample"
                 print alertMsg
@@ -180,7 +173,7 @@ def errorCheck (inFilePath, outFilePath, guiName):
             numPoints += 1
             numNeighbors = 0
             currentPntActivity = line[5]
-        elif line [0] == neighborCode:
+        elif line [0] == neighborAbbrev:
             if not isFocal: ##Then this neighbor was somehow recorded outside the duration of a focal (Pretty sure Prim8 forbids this)
                 alertMsg = 'Line ' + str(n+2) + ": NGH line outside of a focal sample"
                 print alertMsg
@@ -194,20 +187,20 @@ def errorCheck (inFilePath, outFilePath, guiName):
                 print alertMsg
                 outFile.write(alertMsg + '\n')
             numNeighbors += 1
-        elif line [0] == adlibCode:
-            if line[4] == line [6]: ##actor and actee the same
+        elif line [0] == adlibAbbrev:
+            if line[5] == line[7]: ##actor and actee the same
                 alertMsg = 'Line ' + str(n+2) + ": Actor == Actee in " + str(line)
                 print alertMsg
                 outFile.write(alertMsg + '\n')
-            if line[6] == emptyValue: ##actee is NULL
+            if line[7] == emptyAbbrev: ##actee is NULL
                 alertMsg = 'Line ' + str(n+2) + ": Actee is NULL in " + str(line)
                 print alertMsg
                 outFile.write(alertMsg + '\n')
-            if line[5] in ['E','M','C']: ##Act is behavior we no longer allow in Prim8
+            if line[6] in ['E','M','C']: ##Act is behavior we no longer allow in Prim8
                 alertMsg = 'Line ' + str(n+2) + ": Act " + line[5] + "no longer allowed"
                 print alertMsg
                 outFile.write(alertMsg + '\n')
-        elif line [0] == noteCode:  
+        elif line [0] == noteAbbrev:  
             print "Note. Nothing to do on line", line
         else:
             print "Line", line, "is not recognized"

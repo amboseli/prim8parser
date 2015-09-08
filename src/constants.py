@@ -15,7 +15,9 @@ emptyAbbrev = 'NULL'
 
 # Codes in Prim8 that may change
 adlibAbbrev = 'ADL'
+pntAbbrev = 'PNT'
 proxBehavName = 'proximity'
+outOfSightValue = 'OOS'
 
 
 # Tables in the main Prim8 data file.
