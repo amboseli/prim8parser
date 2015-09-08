@@ -6,11 +6,17 @@ Created on 4 Sep 2015
 Constants used throughout the parser.
 
 '''
-# Codes NOT in Prim8 used to describe different kinds of observations
+# Codes NOT in Prim8
     # 'ADL', for example, IS in Prim8, so it's not listed here.
 focalAbbrev = 'HDR' ##Abbreviation for output file to indicate that the line begins a new focal sample
 neighborAbbrev = 'NGH' ##Abbreviation for output file to indicate that the line is a focal neighbor
 noteAbbrev = 'TXT' ##Abbreviation for output file to indicate that the line is freeform text
+emptyAbbrev = 'NULL'
+
+# Codes in Prim8 that may change
+adlibAbbrev = 'ADL'
+proxBehavName = 'proximity'
+
 
 # Tables in the main Prim8 data file.
 # These NEED to be spelled the same way as they are in the file. Case sensitive.

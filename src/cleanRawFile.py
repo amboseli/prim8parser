@@ -8,7 +8,6 @@ Created on 27 Aug 2015
 '''
 import csv
 from datetime import datetime, timedelta
-from constants import dictInstMods
 
 def removeExtraNewLines(filePath):
     '''
@@ -23,13 +22,13 @@ def removeExtraNewLines(filePath):
     Useful because the team's data occasionally includes newline characters (but not carriage returns) in the middle of their data, e.g. "Out of S\night"  
     It's not yet clear how this is happening, but these unwanted newlines cause trouble when reading the data file one line at a time.  
     '''
-    file = open(filePath,'r')
+    openedFile = open(filePath,'r')
     print "Reading raw input file"
-    fullText = file.read()
+    fullText = openedFile.read()
     fullText = fullText.replace(u"\u000A","") ##Replace all newlines ('\n') with nothing
     fullText = fullText.replace(u"\u000D",u"\u000D\u000A") ##Replace all carriage returns ('\r') with carriage return, new line ('\r\n')
     print "Finished checking for unwanted newlines"
-    file.close()
+    openedFile.close()
     return fullText.splitlines()
 
 def cleanRawData(filePath):
@@ -97,9 +96,9 @@ def addInstancesModifiersDict(masterDict):
     modifierIDs = sorted(masterDict[p8modifiers].keys()) ##Get list of all the modifiers_id's
     modifierIDs.pop()  ##Remove the key for the modifiers table "legend"
     masterDict[dictInstMods] = {}
-    for id in modifierIDs:
-        instance_id = masterDict[p8modifiers][id][0]
-        masterDict[dictInstMods][instance_id] = id
+    for mod_id in modifierIDs:
+        instance_id = masterDict[p8modifiers][mod_id][0]
+        masterDict[dictInstMods][instance_id] = mod_id
     print "Dictionary", dictInstMods, "populated"
     return masterDict
 
@@ -217,3 +216,190 @@ def multipleObservers(masterDict):
     from constants import p8observers
     obs = [value[2] for (key, value) in masterDict[p8observers].iteritems() if type(key) == int]
     return len(obs) > 1
+
+def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
+    '''
+    Parses data for a line from the behavior_instances table and adds it together to a list.
+    The list is joined into a string, presumably to write to the outFile.
+    dayTime is a datetime object and represents the date and time of the instance.
+    eventKey is an integer and is the key for the "instances" dictionary corresponding to the instance.
+    "masterDict" is the main dictionary of dictionaries used so often in this program. Presumed to be "allData".
+    instanceObserver is the optional string of the observer's initials to use in the data.  If not given, observer will be looked-up in masterDict.
+    Returns a tuple, the string that can be written to the outFile, and the "observer" string.
+    '''
+    from constants import p8behaviors, p8behaviorinstances, p8behaviortypes, p8individuals, p8modifiers, dictInstMods,neighborAbbrev, emptyAbbrev, proxBehavName
+    
+    outList = [] ##List of strings that will be joined together
+    
+    eventTypeID =  masterDict[p8behaviors][(masterDict[p8behaviorinstances][eventKey][1])][7] ##Look up behavior type id
+    eventType = masterDict[p8behaviortypes][eventTypeID][1] ##Using behavior type id, get the actual abbrev for that behavior type
+    if eventType == proxBehavName: ##Then it's a "neighbor" line. Let's use a shorter abbreviation.
+        eventType = neighborAbbrev
+    outList.append(eventType.upper()) ##Add code to indicate what kind of line this is
+    if instanceObserver == 'NOT GIVEN':
+        observer = getObserver(masterDict, eventKey)
+    else:
+        observer = instanceObserver
+    outList.append(observer.upper())
+    outList.append(dayTime.date().isoformat())  ##Add date  
+    outList.append(dayTime.time().isoformat()) ##then time
+    actorID = masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][0])][1] ##Get actor
+    outList.append(actorID.upper())
+    actID = masterDict[p8behaviors][(masterDict[p8behaviorinstances][eventKey][1])][1]  ##Get act
+    outList.append(actID.upper())
+    if masterDict[p8behaviorinstances][eventKey][2] == '': ##There's no actee. We don't want to pass '' to the "individuals" dictionary
+        acteeID = emptyAbbrev
+    else:
+        acteeID = str(masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][2])][1]) ##Convert to string in case the actee is 997, 998
+    outList.append(acteeID.upper())
+    if eventKey in masterDict[dictInstMods]: ##then there was a modifier recorded with this event as well
+        modKey = masterDict[dictInstMods][eventKey] ##Get the modifiers ID
+        modifier = masterDict[p8modifiers][modKey][1] ##Get the modifier (a string)
+        foodsLong, foodsShort = getCodes('./foodcodes.txt', 1, 0) # Get food codes
+        if modifier.upper() in foodsLong: ##Then the modifier is a food, and we want to change it to its abbreviation.
+            foodIndex = foodsLong.index(modifier.upper())
+            print ("Replacing food code '" + modifier + "' with '" + foodsShort[foodIndex] + "'")
+            modifier = foodsShort[foodIndex] ##Replace the long food name with its short name
+        outList.append(modifier.upper())
+    outLine = '\t'.join(outList)
+    print outLine
+    return str(outLine + '\n'), observer
+
+def writeFocalFollow(dayTime, eventKey, masterDict, focalObserver):
+    '''
+    Parses data for a line from the focalfollows table and adds it together to a list.
+    The list is joined into a string, presumably to write to the outFile.
+    dayTime is a datetime object and represents the date and time of the focal follow.
+    eventKey is an integer and is the key for the "focalfollows" dictionary corresponding to the focal.
+    masterDict is the big dictionary of dictionaries that stores all the data.
+    focalObserver is a string, representing the initials of the observer of the focal sample.
+    Returns the string that can be written to the outFile.
+    '''
+    from constants import p8individuals, p8focalfollows, focalAbbrev, p8groups
+    
+    ##Get a corrected list of group names, because prim8 doesn't comprehend group names with apostrophes. E.g. we want "ACA", not "acacia".  Prim8 can't handle "acacia's".
+    groupsLong, groupsShort = getCodes('./groupcodes.txt', 3, 2)
+    
+    outList = [] ##List of strings that will be joined together
+    
+    outList.append(focalAbbrev.upper()) ##Add a code to indicate that this line begins a new focal sample
+    outList.append(focalObserver.upper())
+    outList.append(dayTime.date().isoformat())  ##Add date  
+    outList.append(dayTime.time().isoformat()) ##then time
+    focalGrpID = masterDict[p8individuals][(masterDict[p8focalfollows][eventKey][0])][4] ##Get group ID number, based on the residence of the focal individual
+    focalGrpName = (masterDict[p8groups][focalGrpID][0])  ##Get group name
+    if focalGrpName.upper() in groupsLong: ##This _should_ be always true
+        grpIndex = groupsLong.index(focalGrpName.upper())
+        print ("Replacing group name '" + focalGrpName + "' with '" + groupsShort[grpIndex] + "'")
+        focalGrpName = groupsShort[grpIndex]
+    outList.append(focalGrpName.upper())
+    focalID = masterDict[p8individuals][(masterDict[p8focalfollows][eventKey][0])][1]
+    outList.append(focalID.upper())
+    focDuration = masterDict[p8focalfollows][eventKey][5]
+    focDurDelta = timedelta(0,focDuration)
+    endTime = dayTime + focDurDelta
+    outList.append(endTime.time().isoformat())
+    outLine = '\t'.join(outList)
+    print outLine
+    return str(outLine + '\n')
+
+def writeAdLib(dayTime, eventKey, masterDict, adlibObserver):
+    '''
+    Parses data for a line from the adlibs table and adds it together to a list.
+    The list is joined into a string, presumably to write to the outFile.
+    dayTime is a datetime object and represents the date and time of the note.
+    eventKey is an integer and is the key for the "adlibs" dictionary corresponding to the note.
+    masterDict is the big dictionary of dictionaries that stores all the data.
+    adlibObserver is a string, representing the initials of the observer of the note.
+    Returns the string that can be written to the outFile.
+    '''
+    from constants import noteAbbrev, p8adlib
+    outList = [] ##List of strings that will be joined together
+    outList.append(noteAbbrev.upper()) ## Add code to indicate that this line is a free-form text note
+    outList.append(adlibObserver.upper()) ## Observer
+    outList.append(dayTime.date().isoformat()) ## Date
+    outList.append(dayTime.time().isoformat()) ## Time
+    outList.append(masterDict[p8adlib][eventKey][-1]) ##Note
+    outLine = '\t'.join(outList)
+    print outLine
+    return str(outLine + '\n')
+
+def writeAll(outputFilePath, appVersion, masterDict):
+    '''
+    Does the following:
+        1) reads the sorted (date/time, event dictionary name, event key) tuples in eventList
+        2) converts them to readable text
+        3) opens a file for writing, specificed by outputFilePath
+        4) writes the text (from #2) to the file
+    outputFilePath is a string.
+    appVersion is a string that should indicate which version of the Prim8 app generated the data. 
+    masterDict is the big dictionary of dictionaries that stores all the data.
+    
+    Checks if multiple observers are recorded in the data.  If only one, that same observer will be used throughout the data without looking it up in every line.
+    If more than one observer:
+        For behavior instances, looks up the noted observer in each line.
+        For focal follows and "adlibs" (text notes), will use the same observer used in the last behavior instance.
+        For focal follows and "adlibs" noted before any behavior instances, will use the observer noted in the first behavior AFTER the follow/adlib.
+    
+    Returns a message, ideally to print to the console, that the process is complete.
+    '''
+    from constants import p8adlib, p8observers, p8behaviorinstances, p8focalfollows
+    
+    ##Create an eventList with all the different behaviors and notes that we want recorded.
+    ##Having them all in one list helps us sort different kinds of data chronologically.
+    eventList = getAllObservations(masterDict)
+    
+    ##Open file for writing at outputFilePath
+    outputFile = open(outputFilePath, 'w') 
+    
+    outLine = 'Parsed data from AmboPrim8, version ' + str(appVersion)+'\n' ##Start every file with this line 
+    outputFile.write(outLine)
+    if multipleObservers(masterDict): ##then we'll need to manually check the observer for each line.
+        lastObserver = '' ##Will be updated in the loop
+        for (eventDayTime, eventTable, tableKey) in eventList:
+            if eventTable == p8behaviorinstances:
+                outLine, lastObserver = writeInstance(eventDayTime, tableKey, masterDict)
+                outputFile.write(outLine)
+            elif eventTable == p8focalfollows:
+                if lastObserver == '': ##we haven't had a behavior yet with an observer. So look forward to the next behavior instance and get its observer.
+                    print "Focal started with no previous observer. Getting observer."
+                    soonestBehaviorKey = [key for (time, table, key) in eventList if table == p8behaviorinstances and time > eventDayTime].pop(0)
+                    lastObserver = getObserver(masterDict, soonestBehaviorKey)
+                    print "Presumed observer is", lastObserver
+                    outLine = writeFocalFollow(eventDayTime, tableKey, masterDict, lastObserver)
+                else:
+                    outLine = writeFocalFollow(eventDayTime, tableKey, masterDict, lastObserver)
+                outputFile.write(outLine)
+            elif eventTable == p8adlib:
+                if lastObserver == '': ##we haven't had a behavior yet with an observer. So look forward to the next behavior instance and get its observer.
+                    print "Adlib note recorded with no previous observer. Getting observer."
+                    soonestBehaviorKey = [key for (time, table, key) in eventList if table == p8behaviorinstances and time > eventDayTime].pop(0)
+                    lastObserver = getObserver(masterDict, soonestBehaviorKey)
+                    print "Presumed observer is", lastObserver
+                    outLine = writeAdLib(eventDayTime, tableKey, masterDict, lastObserver)
+                else:
+                    outLine = writeAdLib(eventDayTime, tableKey, masterDict, lastObserver)
+                outputFile.write(outLine)
+            else:
+                print "Unrecognized table from:", (eventDayTime, eventTable, tableKey)
+                outputFile.write('Unable to parse data'+'\n')
+    else: ##there is only one observer, so this can move much faster by not re-looking up observer in every instance.
+        print "Only one observer found. Get the only observer and don't look it up in each line."
+        onlyObserver = [value[2] for (key, value) in masterDict[p8observers].iteritems() if type(key) == int].pop()
+        print onlyObserver
+        for (eventDayTime, eventTable, tableKey) in eventList:
+            if eventTable == p8behaviorinstances:
+                outLine, lastObserver = writeInstance(eventDayTime, tableKey, masterDict, onlyObserver)
+                outputFile.write(outLine)
+            elif eventTable == p8focalfollows:
+                outLine = writeFocalFollow(eventDayTime, tableKey, masterDict, onlyObserver)
+                outputFile.write(outLine)
+            elif eventTable == p8adlib:
+                outLine = writeAdLib(eventDayTime, tableKey, masterDict, onlyObserver)
+                outputFile.write(outLine)
+            else:
+                print "Unrecognized table from:", (eventDayTime, eventTable, tableKey)
+                outputFile.write('Unable to parse data'+'\n')
+    print "Closing export file at", outputFilePath
+    outputFile.close()
+    return 'Finished writing all data!'
