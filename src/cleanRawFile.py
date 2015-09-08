@@ -174,8 +174,8 @@ def getAllObservations(masterDict):
     from constants import observationTables
     
     eventList = []
-    for table in observationTables:
-        addEventKeys(eventList, masterDict, table)
+    for tableName in observationTables:
+        addEventKeys(eventList, masterDict, tableName)
     eventList.sort()
     return eventList
 
@@ -207,7 +207,8 @@ def getObserver(masterDict, eventKey):
     and eventKey, an integer representing a key in the "behaviorinstances" dictionary.
     Returns the initials of the observer (a string) who recorded the instance referred-to by eventKey.
     '''
-    return masterDict['observers'][(masterDict['behaviorinstances'][eventKey][9])][2]
+    from constants import p8observers, p8behaviorinstances
+    return masterDict[p8observers][(masterDict[p8behaviorinstances][eventKey][9])][2]
 
 def multipleObservers(masterDict):
     '''
@@ -215,8 +216,6 @@ def multipleObservers(masterDict):
     Checks if more than one observer's initials are used.
     Returns True (yes, more than one observer) or False (0-1 observers).
     '''
-    obs = [value[2] for (key, value) in masterDict['observers'].iteritems() if type(key) == int]
+    from constants import p8observers
+    obs = [value[2] for (key, value) in masterDict[p8observers].iteritems() if type(key) == int]
     return len(obs) > 1
-
-
-
