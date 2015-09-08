@@ -6,7 +6,6 @@ Created on 27 Aug 2015
     Functions used to clean and process data from the prim8 import file into data usable by the rest of the program.
 
 '''
-
 import csv
 from datetime import datetime, timedelta
 from constants import dictInstMods
@@ -24,9 +23,9 @@ def removeExtraNewLines(filePath):
     Useful because the team's data occasionally includes newline characters (but not carriage returns) in the middle of their data, e.g. "Out of S\night"  
     It's not yet clear how this is happening, but these unwanted newlines cause trouble when reading the data file one line at a time.  
     '''
-    file.open(filePath,'r')
+    file = open(filePath,'r')
     print "Reading raw input file"
-    fullText = filePath.read()
+    fullText = file.read()
     fullText = fullText.replace(u"\u000A","") ##Replace all newlines ('\n') with nothing
     fullText = fullText.replace(u"\u000D",u"\u000D\u000A") ##Replace all carriage returns ('\r') with carriage return, new line ('\r\n')
     print "Finished checking for unwanted newlines"
@@ -110,7 +109,7 @@ def rawGetDateTime (itemList, yearIndex):
     (Assumes that "Year" is followed by Month, Day, Time)
     Outputs the date and time as a single "datetime" object.
     '''
-    ##print "Making date/time beginning at", itemList[yearIndex], "from list", itemList
+    print "Making date/time beginning at", itemList[yearIndex], "from list", itemList
     thisYear = itemList[yearIndex]
     thisMonth = itemList[yearIndex+1]
     thisDay = itemList[yearIndex+2]
@@ -175,7 +174,7 @@ def getAllObservations(masterDict):
     
     eventList = []
     for tableName in observationTables:
-        addEventKeys(eventList, masterDict, tableName)
+        addEventKeys(eventList, masterDict[tableName], tableName)
     eventList.sort()
     return eventList
 
@@ -198,7 +197,6 @@ def getCodes(codeFilePath, longIndex, shortIndex):
         cleanCode = code.strip().split("\t")
         longCodes.append(cleanCode[longIndex].upper())
         shortCodes.append(cleanCode[shortIndex].upper())
-    print "Finished getting codes from "
     return longCodes, shortCodes
 
 def getObserver(masterDict, eventKey):

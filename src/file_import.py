@@ -10,8 +10,7 @@ from cleanRawFile import *
 from constants import *
 
 def prim8VersionInput():
-    from constants import prim8Version
-    global master, impPath, outPath
+    global prim8Version, master, impPath, outPath
     impPath = e1.get()
     outPath = e2.get()
     prim8Version = e3.get()
@@ -28,9 +27,7 @@ def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     instanceObserver is the optional string of the observer's initials to use in the data.  If not given, observer will be looked-up in masterDict.
     Returns a tuple, the string that can be written to the outFile, and the "observer" string.
     '''
-    from constants import dictInstMods, p8behaviors, p8behaviorinstances, p8behaviortypes, p8individuals, p8modifiers
-    
-    
+    from constants import p8behaviors, p8behaviorinstances, p8behaviortypes, p8individuals, p8modifiers, dictInstMods
     
     outList = [] ##List of strings that will be joined together
     
@@ -55,8 +52,8 @@ def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     else:
         acteeID = str(masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][2])][1]) ##Convert to string in case the actee is 997, 998
     outList.append(acteeID.upper())
-    if eventKey in instances_modifiers: ##then there was a modifier recorded with this event as well
-        modKey = instances_modifiers[eventKey] ##Get the modifiers ID
+    if eventKey in masterDict[dictInstMods]: ##then there was a modifier recorded with this event as well
+        modKey = masterDict[dictInstMods][eventKey] ##Get the modifiers ID
         modifier = masterDict[p8modifiers][modKey][1] ##Get the modifier (a string)
         foodsLong, foodsShort = getCodes('./foodcodes.txt', 1, 0) # Get food codes
         if modifier.upper() in foodsLong: ##Then the modifier is a food, and we want to change it to its abbreviation.
@@ -127,10 +124,14 @@ def writeAdLib(dayTime, eventKey, masterDict, adlibObserver):
     print outLine
     return str(outLine + '\n')
 
-def writeAll(outputFile, eventList, appVersion, masterDict):
+def writeAll(outputFilePath, appVersion, masterDict):
     '''
-    Reads the sorted (date/time, event dictionary name, event key) tuples in eventList, converts them to readable text, then writes the text to outputFile.
-    Assumes outputFile is already open for writing.
+    Does the following:
+        1) reads the sorted (date/time, event dictionary name, event key) tuples in eventList
+        2) converts them to readable text
+        3) opens a file for writing, specificed by outputFilePath
+        4) writes the text (from #2) to the file
+    outputFilePath is a string.
     appVersion is a string that should indicate which version of the Prim8 app generated the data. 
     masterDict is the big dictionary of dictionaries that stores all the data.
     
@@ -142,7 +143,13 @@ def writeAll(outputFile, eventList, appVersion, masterDict):
     
     Returns a message, ideally to print to the console, that the process is complete.
     '''
-    eventList.sort() ##Should be sorted already, but just in case
+    ##Create an eventList with all the different behaviors and notes that we want recorded.
+    ##Having them all in one list helps us sort different kinds of data chronologically.
+    eventList = getAllObservations(masterDict)
+    
+    ##Open file for writing at outputFilePath
+    outputFile = open(outputFilePath, 'w') 
+    
     outLine = 'Parsed data from AmboPrim8, version ' + str(appVersion)+'\n' ##Start every file with this line 
     outputFile.write(outLine)
     if multipleObservers(masterDict): ##then we'll need to manually check the observer for each line.
@@ -191,6 +198,8 @@ def writeAll(outputFile, eventList, appVersion, masterDict):
             else:
                 print "Unrecognized table from:", (eventDayTime, eventTable, tableKey)
                 outputFile.write('Unable to parse data'+'\n')
+    print "Closing export file at", outputFilePath
+    outputFile.close()
     return 'Finished writing all data!'
 
 if __name__ == '__main__':
@@ -199,13 +208,7 @@ if __name__ == '__main__':
     impPath = '' ##File path for the import file
     outPath = '' ##File path for the output file
 
-    allData = {} ##Dictionary of dictionaries to be created from the import file
-    noteList = [] ##List for (datetime, dictionary name, dictionary key) tuples for every line that we want recorded in the final output sheet
-    instances_modifiers = {} ##Dictionary to note all the behavior instances where modifiers were also recorded (presumably only neighbor lines and points with food codes)
-    foodsLong = [] ##List for food codes. This will hold the long name, e.g. "Grass corms of other or unknown species". 
-    foodsShort = [] ##List for food codes.  This will hold the short name, e.g. "GRC".
-    groupsLong = [] ##List for group names. This will hold the spelled-out name, as it was provided to the Prim8 app, e.g. "acacia" for Acacia's group
-    groupsShort = [] ##List for group names. This will hold the abbreviation for the group's name, e.g. "ACA" for Acacia's group
+    prim8Version = '1.150510' # Will be removed soon, once the GUI is more-intelligently designed
 
     ##Make a GUI to select import and export file names/locations
     master = Tk()
@@ -235,25 +238,12 @@ if __name__ == '__main__':
     ##impFile = open('./../import_test.csv', 'r')
 
     print "Creating allData dictionary"
-    allData = makeAllDicts(impPath)
+    allData = makeAllDicts(impPath) ##Dictionary of dictionaries to be created from the import file
 
-    ##Populate the noteList with all the different behaviors and notes that we want recorded.
-    ##Having them all in one list helps us sort different kinds of data chronologically.
-
-    noteList = getAllObservations(allData)
-
-
-       
-
-    
-
-    print "Creating export file"
+    ##print "Creating export file"
     ##outPath = asksaveasfilename(defaultextension='.txt', title='Name of the exported data file?')
-    outFile = open(outPath, 'w')
+    ##outFile = open(outPath, 'w')
     ##outFile = open('./../output_test.txt','w')
     
     ##Let's finally output something!
-    print writeAll(outFile, noteList, prim8Version, allData)
-
-    print "Closing export file at", outPath
-    outFile.close()
+    print writeAll(outPath, prim8Version, allData)
