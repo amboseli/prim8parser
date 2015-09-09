@@ -19,6 +19,7 @@ def getAgonismsFromFile(filePath, minDate, maxDate, behaviorCodes = agonismCodes
     
     Returns a list of strings, where each string is one line representing one interaction.
     '''
+    from constants import adlibAbbrev
     openedFile = open(filePath,'r')
     openedFile.readline() # Skip past the header line
     fileLines = openedFile.readlines()
@@ -26,7 +27,7 @@ def getAgonismsFromFile(filePath, minDate, maxDate, behaviorCodes = agonismCodes
     agonisms = []
     for line in fileLines: # This could easily be a list comprehension, but this seems more readable
         splitLine = line.split('\t')
-        if splitLine[0] == 'ADL' and splitLine[5] in agonismCodes and splitLine[2]>=minDate and splitLine[2]<=maxDate:
+        if splitLine[0] == adlibAbbrev and splitLine[6] in agonismCodes and splitLine[2]>=minDate and splitLine[2]<=maxDate:
             agonisms.append(line)
     return agonisms
 
@@ -52,8 +53,8 @@ def gatherAgonisms(fileSoFarPath, newDataFilePath, minDate, maxDate):
         print 'No new agonisms added!'
     
     uniqueList = list(uniqueAgonisms)
-    # Sort list by actor, actee, date, time
-    uniqueList.sort(key=lambda behavior: ( behavior.split('\t')[4], behavior.split('\t')[6], behavior.split('\t')[2], behavior.split('\t')[3] ))
+    # Sort list by group, actor, actee, date, time
+    uniqueList.sort(key=lambda behavior: ( behavior.split('\t')[4], behavior.split('\t')[5], behavior.split('\t')[7], behavior.split('\t')[2], behavior.split('\t')[3] ))
     
     outFile = open(fileSoFarPath, 'w')
     outFile.write('Agonisms recorded between ' + minDate + ' and ' + maxDate + '\n')
