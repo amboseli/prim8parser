@@ -116,6 +116,9 @@ class rawFileImportGUI(Frame):
         else:
             allData = makeAllDicts(value1)
             print writeAll(value2, value3, allData)
+            # Empty file fields to ensure the same file isn't accidentally used twice
+            input1.set("")
+            input2.set("")
             
 if __name__=='__main__':
     myRoot = Tk()
