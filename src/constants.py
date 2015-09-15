@@ -48,8 +48,10 @@ p8TableList = [p8adlib, p8sites, p8observers, p8groups, p8species, p8individuals
 # Tables whose lines represent observations that we want to retain
 observationTables = [p8adlib, p8behaviorinstances, p8focalfollows]
 
-# The current Prim8 version #
+# Info about the current Prim8 version
+prim8Name = 'AMBOPRIM8'
 prim8Version = '1.150510'
+prim8Setup = 'JUL15' # Used to populate the "setupid" in babase. The name "setup" made more sense for Psion data. It's a little murky for Prim8.
 
 # Used when compiling agonisms
 agonismCodes = ['AS', 'OS', 'DS']

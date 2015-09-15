@@ -340,7 +340,7 @@ def writeAdLib(dayTime, eventKey, masterDict, adlibObserver):
     print outLine
     return str(outLine + '\n')
 
-def writeAll(outputFilePath, appVersion, masterDict):
+def writeAll(outputFilePath, appName, appVersion, setupVersion, masterDict):
     '''
     Does the following:
         1) reads the sorted (date/time, event dictionary name, event key) tuples in eventList
@@ -348,7 +348,12 @@ def writeAll(outputFilePath, appVersion, masterDict):
         3) opens a file for writing, specificed by outputFilePath
         4) writes the text (from #2) to the file
     outputFilePath is a string.
+    appName is a string that indicates the official name of the app used to record the data in masterDict.
+        (It will probably always be "AMBOPRIM8")
     appVersion is a string that should indicate which version of the Prim8 app generated the data. 
+        For import to Babase, the (appName + appVersion) string must be a PROGRAMIDS.Pid_string in Babase.
+    setupVersion is a string that indicates which version of the Prim8 setup files (ethogram and valid modifiers) was used. 
+        For import to Babase, the (appName + setupVersion) string must be a SETUPIDS.Sid_string in Babase.
     masterDict is the big dictionary of dictionaries that stores all the data.
     
     Checks if multiple observers are recorded in the data.  If only one, that same observer will be used throughout the data without looking it up in every line.
@@ -368,7 +373,7 @@ def writeAll(outputFilePath, appVersion, masterDict):
     ##Open file for writing at outputFilePath
     outputFile = open(outputFilePath, 'w') 
     
-    outLine = 'Parsed data from AmboPrim8, version ' + str(appVersion)+'\n' ##Start every file with this line 
+    outLine = 'Parsed data from ' + '_'.join([appName, appVersion]) + ', ' + '_'.join([appName, setupVersion]) + '\n' ##Start every file with this line 
     outputFile.write(outLine)
     if multipleObservers(masterDict): ##then we'll need to manually check the observer for each line.
         lastObserver = '' ##Will be updated in the loop
