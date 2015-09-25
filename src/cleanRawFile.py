@@ -235,7 +235,36 @@ def getGroupAbbrev(masterDict, grpIDNum):
         grpIndex = groupsLong.index(currentGrpName.upper())
         print ("Replacing group name '" + currentGrpName + "' with '" + groupsShort[grpIndex] + "'")
         currentGrpName = groupsShort[grpIndex]
+    else:
+        print "Group name" + currentGrpName + "not recognized!"
     return currentGrpName
+
+def getfocalStype(eventKey, masterDict):
+    '''
+    eventKey is an integer, a key in the "focalfollows" table.
+    masterDict is the dictionary of dictionaries representing all the data being processed.
+    
+    Uses eventKey to lookup the focal individual, then looks up that individual's age-sex class from the "individuals" table.
+        With the age-sex class, we can discern which sampling protocol (i.e. which sample type/"stype") was used:
+            --If there's a J, it's the juvenile protocol
+            --If there's an F and no J, it's the adult female protocol
+    
+    Returns a string, the abbreviation indicating which sampling protocol was used, based on the individual's age-sex class.
+        Returns "UNK" if the protocol can't be determined from the age-sex class.
+    '''
+    from constants import p8individuals, p8focalfollows, stypeAdultFem, stypeJuv
+    
+    focalIDNum = masterDict[p8focalfollows][eventKey][0]
+    focalAgeSex = (masterDict[p8individuals][focalIDNum][2]).lower()
+    
+    focalStype = 'UNK'
+    
+    if 'j' in focalAgeSex:
+        focalStype = stypeJuv
+    elif 'f' in focalAgeSex:
+        focalStype = stypeAdultFem
+    
+    return focalStype
 
 def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     '''
@@ -311,6 +340,7 @@ def writeFocalFollow(dayTime, eventKey, masterDict, focalObserver):
     outList.append(focalGrpName.upper())
     focalID = masterDict[p8individuals][(masterDict[p8focalfollows][eventKey][0])][1]
     outList.append(focalID.upper())
+    outList.append(getfocalStype(eventKey, masterDict))
     focDuration = masterDict[p8focalfollows][eventKey][5]
     focDurDelta = timedelta(0,focDuration)
     endTime = dayTime + focDurDelta
@@ -340,7 +370,18 @@ def writeAdLib(dayTime, eventKey, masterDict, adlibObserver):
     print outLine
     return str(outLine + '\n')
 
-def writeAll(outputFilePath, appName, appVersion, setupVersion, masterDict):
+def getTabletLongName(tabletID):
+    '''
+    tabletID is a string used to indicate which tablet was used to collect data.
+    
+    Looks up tabletID as a key in the "palmtops" dictionary (from constants.py).
+    Returns the corresponding value from the palmtops dictionary if it exists. Otherwise, returns tabletID. 
+    '''
+    from constants import palmtops
+    return palmtops.get(tabletID,tabletID)
+
+
+def writeAll(outputFilePath, appName, appVersion, setupVersion, tabletID, masterDict):
     '''
     Does the following:
         1) reads the sorted (date/time, event dictionary name, event key) tuples in eventList
@@ -354,6 +395,9 @@ def writeAll(outputFilePath, appName, appVersion, setupVersion, masterDict):
         For import to Babase, the (appName + appVersion) string must be a PROGRAMIDS.Pid_string in Babase.
     setupVersion is a string that indicates which version of the Prim8 setup files (ethogram and valid modifiers) was used. 
         For import to Babase, the (appName + setupVersion) string must be a SETUPIDS.Sid_string in Babase.
+    tabletID is a string that indicates which Samsung tablet was used to collect the data. It is presumed to be a "key" in the "palmtops" dictionary from constants.
+        For import to Babase, the "Babase" value is fetched from the "palmtops" dictionary. If the tabletID doesn't exist, it's retained (not replaced), but won't 
+            be ready for Babase.
     masterDict is the big dictionary of dictionaries that stores all the data.
     
     Checks if multiple observers are recorded in the data.  If only one, that same observer will be used throughout the data without looking it up in every line.
@@ -373,7 +417,7 @@ def writeAll(outputFilePath, appName, appVersion, setupVersion, masterDict):
     ##Open file for writing at outputFilePath
     outputFile = open(outputFilePath, 'w') 
     
-    outLine = 'Parsed data from ' + '_'.join([appName, appVersion]) + ', ' + '_'.join([appName, setupVersion]) + '\n' ##Start every file with this line 
+    outLine = 'Parsed data from: ' + '_'.join([appName, appVersion]) + ', ' + '_'.join([appName, setupVersion]) + ', ' + getTabletLongName(tabletID) + '\n' ##Start every file with this line 
     outputFile.write(outLine)
     if multipleObservers(masterDict): ##then we'll need to manually check the observer for each line.
         lastObserver = '' ##Will be updated in the loop

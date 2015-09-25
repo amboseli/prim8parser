@@ -19,6 +19,11 @@ pntAbbrev = 'PNT'
 proxBehavName = 'proximity'
 outOfSightValue = 'OOS'
 
+# Codes representing focal sample "types" (adult females vs. juveniles)
+stypeAdultFem = 'FEM'
+stypeAdultFemShort = 'F'
+stypeJuv = 'JUV'
+stypeJuvShort = 'J'
 
 # Tables in the main Prim8 data file.
 # These NEED to be spelled the same way as they are in the file. Case sensitive.
@@ -50,8 +55,15 @@ observationTables = [p8adlib, p8behaviorinstances, p8focalfollows]
 
 # Info about the current Prim8 version
 prim8Name = 'AMBOPRIM8'
-prim8Version = '1.150510'
-prim8Setup = 'JUL15' # Used to populate the "setupid" in babase. The name "setup" made more sense for Psion data. It's a little murky for Prim8.
+prim8Version = '1.150728'
+prim8Setup = 'JUL15' # Used to populate the "setupid" in babase. The name "setup" made more sense for Psion data. It makes less sense for Prim8.
+
+# Dictionary with abbreviations for all the tablets in use and their descriptions in Babase (PALMTOPS.Descr)
+palmtops = {}
+palmtops['SA'] = 'Samsung Tablet A'
+palmtops['SB'] = 'Samsung Tablet B'
+palmtops['SC'] = 'Samsung Tablet C'
+palmtops['SD'] = 'Samsung Tablet D'
 
 # Used when compiling agonisms
 agonismCodes = ['AS', 'OS', 'DS']
