@@ -19,12 +19,6 @@ pntAbbrev = 'PNT'
 proxBehavName = 'proximity'
 outOfSightValue = 'OOS'
 
-# Codes representing focal sample "types" (adult females vs. juveniles)
-stypeAdultFem = 'FEM'
-stypeAdultFemShort = 'F'
-stypeJuv = 'JUV'
-stypeJuvShort = 'J'
-
 # Tables in the main Prim8 data file.
 # These NEED to be spelled the same way as they are in the file. Case sensitive.
 p8adlib = 'adlib'
@@ -67,3 +61,35 @@ palmtops['SD'] = 'Samsung Tablet D'
 
 # Used when compiling agonisms
 agonismCodes = ['AS', 'OS', 'DS']
+
+# Neighbor codes used in Prim8, and their Babase counterparts
+neighborsFem = {}
+neighborsFem['N0'] = '1'
+neighborsFem['N1'] = 'A'
+neighborsFem['N2'] = 'O'
+
+neighborsJuv = {}
+neighborsJuv['N0'] = '1'
+neighborsJuv['N1'] = '2'
+neighborsJuv['N2'] = '3'
+
+# Unknown neighbor snames used in Prim8, and their Babase counterparts
+unknSnames = {}
+unknSnames['997'] = '997'
+unknSnames['998'] = '998'
+unknSnames['XXX'] = 'NULL'
+
+# Codes representing focal sample "types" (adult females vs. juveniles)
+stypeAdultFem = 'FEM'
+stypeJuv = 'JUV'
+
+# Dictionary to convert the stype "codes" (above) into the "stype" values used in Babase
+stypesBabase = {}
+stypesBabase[stypeAdultFem] = 'F'
+stypesBabase[stypeJuv] = 'J'
+
+# Focal activity that indicates feeding
+focalFeeding = 'F'
+
+# Necessary prefix for any text notes to be recorded in the ALLMISCS table
+allMiscsPrefix = 'O, '
