@@ -27,7 +27,7 @@ def getAgonismsFromFile(filePath, minDate, maxDate, behaviorCodes = agonismCodes
     agonisms = []
     for line in fileLines: # This could easily be a list comprehension, but this seems more readable
         splitLine = line.split('\t')
-        if splitLine[0] == adlibAbbrev and splitLine[6] in agonismCodes and splitLine[2]>=minDate and splitLine[2]<=maxDate:
+        if splitLine[0] == adlibAbbrev and splitLine[6] in behaviorCodes and splitLine[2]>=minDate and splitLine[2]<=maxDate:
             agonisms.append(line)
     return agonisms
 
