@@ -52,6 +52,57 @@ def countMins(dataLines):
     
     return numMins
 
+def collectTxtNotes(dataLines):
+    '''
+    dataLines is a list of lists of strings, presumably the result of a "readlines" from a data file
+        followed by a "strip()" and a "split()".
+    
+    Gathers all text notes in dataLines and determines which focal (also from dataLines) each note belongs
+        to.  In Babase, text notes must be associated with a specific focal sample.  Prim8 does not require
+        this, so notes may not actually be recorded during the focal. A note is associated with a focal if:
+        1) The note is during the focal, or
+        2) The note is on the same day as the focal and the focal is the last recorded before the note, or
+        3) The note is on the same day as the focal and the focal is the first recorded after the note.
+        Notes recorded on days with no focals recorded won't be associated with any focal.
+
+    Returns a dictionary: its keys are each focal "HDR" line (string, not list). Its values are lists of
+        associated notes, saved as lists of strings.  So a value is a list of lists of strings. It may be
+        an empty list.
+    '''
+    from constants import focalAbbrev, noteAbbrev
+    from error_checking import sameDate
+    
+    focalNotes ={}
+    
+    theData = [line for line in dataLines if line[0] in [focalAbbrev, noteAbbrev]]
+    
+    # Probably not necessary, but just in case let's sort by date, time
+    theData.sort(key = lambda line: (line[2], line[3]))
+    
+    #Initialize variables to use in the loop
+    orphanNotes = [] #Temporary container for notes that aren't during or after a focal
+    lastFocal = [] 
+    
+    # First group together all notes that happened during or after a focal
+    for line in theData:
+        if isType(line, focalAbbrev):
+            lastFocal = line[:]
+            focalNotes['\t'.join(line)] = []
+        elif isType(line, noteAbbrev):
+            if lastFocal == [] or not sameDate(line, lastFocal):
+                orphanNotes.append(line)
+            else: # The note in "line" must be after a focal that occurred on the same day
+                focalNotes['\t'.join(lastFocal)].append(line)
+    
+    # Now take care of the "orphans". Find the first focal on the same day as the note
+    for note in orphanNotes:
+        for line in theData:
+            if isType(line, focalAbbrev) and sameDate(note, line):
+                focalNotes['\t'.join(lastFocal)].append(line)
+                break # Stop looping through all of the data. We only want the first focal.
+    
+    return focalNotes
+
 def neighborIsNull(dataLine):
     '''
     dataLine is a list of strings that represents a single line of data.

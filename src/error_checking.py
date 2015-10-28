@@ -16,6 +16,19 @@ def getDateTime(eventLine, dateIndex, timeIndex):
     joinedTime = ' '.join([eventLine[dateIndex],eventLine[timeIndex]]) ##Result should be string 'yyyy-mm-dd hh:mm:ss'
     return datetime.strptime(joinedTime, '%Y-%m-%d %H:%M:%S')
 
+def sameDate(eventLine1, eventLine2):
+    '''
+    Parameters are lists of strings, presumed to be lines of data, split and stripped.
+        All that really matters, though, is [2] of both parameters is a yyyy-mm-dd date.
+        
+    Checks if the date in both lines is the same.
+    
+    Returns TRUE or FALSE.
+    '''
+    date1 = datetime.strptime(eventLine1[2],'%Y-%m-%d')
+    date2 = datetime.strptime(eventLine2[2],'%Y-%m-%d')
+    return date1 == date2
+
 def duringFocal (eventLine, focalEndTime):
     '''
     Checks if the day/time in eventLine is before the focalEndTime.
