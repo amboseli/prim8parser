@@ -3,7 +3,8 @@ Created on 28 Oct 2015
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
-
+from Tkinter import *
+from tkFileDialog import askopenfilename, asksaveasfilename
 from errorCheckingHelpers import *
 
 def errorCheck (inFilePath, outFilePath, guiName):

@@ -5,8 +5,6 @@ Created on 6 Aug 2015
 '''
 
 from datetime import datetime
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
 
 def getDateTime(eventLine, dateIndex, timeIndex):
     '''
