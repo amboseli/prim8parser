@@ -70,7 +70,7 @@ def collectTxtNotes(dataLines):
         an empty list.
     '''
     from constants import focalAbbrev, noteAbbrev
-    from error_checking import sameDate
+    from errorCheckingHelpers import sameDate
     
     focalNotes ={}
     
@@ -182,7 +182,7 @@ def behavDuringFocal(lastFocal, thisBehav):
         
     Returns True if thisBehav is recorded before lastFocal ended.  False otherwise.
     '''
-    from error_checking import getDateTime, duringFocal
+    from errorCheckingHelpers import getDateTime, duringFocal
     
     if len(lastFocal) == 0:
         return False
