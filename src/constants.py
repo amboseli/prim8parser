@@ -63,15 +63,17 @@ palmtops['SD'] = 'Samsung Tablet D'
 agonismCodes = ['AS', 'OS', 'DS']
 
 # Neighbor codes used in Prim8, and their Babase counterparts
+p8_nghcodes = ['N0', 'N1', 'N2']
+
 neighborsFem = {}
-neighborsFem['N0'] = '1'
-neighborsFem['N1'] = 'A'
-neighborsFem['N2'] = 'O'
+neighborsFem[p8_nghcodes[0]] = '1'
+neighborsFem[p8_nghcodes[1]] = 'A'
+neighborsFem[p8_nghcodes[2]] = 'O'
 
 neighborsJuv = {}
-neighborsJuv['N0'] = '1'
-neighborsJuv['N1'] = '2'
-neighborsJuv['N2'] = '3'
+neighborsJuv[p8_nghcodes[0]] = '1'
+neighborsJuv[p8_nghcodes[1]] = '2'
+neighborsJuv[p8_nghcodes[2]] = '3'
 
 # Unknown neighbor snames used in Prim8, and their Babase counterparts
 unknSnames = {}

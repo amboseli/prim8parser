@@ -3,10 +3,7 @@ Created on 28 Oct 2015
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
-from errorCheckingHelpers import *
-from datetime import datetime
+from errorCheckingHelpers import dataSummary, errorAlertSummary, writeHeader
 from os import path
 
 def errorCheck (inFilePath, outFilePath):
@@ -16,13 +13,7 @@ def errorCheck (inFilePath, outFilePath):
     Errors, alerts, and statistics will be written to the file at outFilePath. 
     Prints a message that the process is complete.
     Returns nothing.
-    
-    Consider breaking this up into some smaller functions?  Maybe run the counts
-    and by-line analyses for each date instead of just once for everything?
-    Another day.
     '''
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, adlibAbbrev, noteAbbrev, emptyAbbrev, outOfSightValue
-    
     print "Creating export file:", path.basename(outFilePath) 
     outFile = open(outFilePath,'w')
     

@@ -3,6 +3,23 @@ Created on 6 Aug 2015
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
+def checkActorIsActee(dataLines):
+    '''
+    Checks ad-lib and neighbor lines in dataLines for cases where the two
+    indicated individuals are the same. 
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of lists of strings: the lines where this is true.
+    '''
+    from babaseWriteHelpers import isType
+    from constants import adlibAbbrev, neighborAbbrev
+    
+    linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev) or isType(line, neighborAbbrev)]
+    
+    return [line for line in linesOfInterest if line[5] == line[7]]
+
 
 def checkDuplicateFocals(dataLines):
     '''
@@ -98,6 +115,58 @@ def checkFocalOverlaps(dataLines):
         for overlap in allOverlaps:
             overlapHdrs.append((focal,overlap))
     return overlapHdrs
+
+def checkNeighborsPerPoint(dataLines):
+    '''
+    Counts the number of neighbor lines for each "point" line in dataLines.
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of (point, number of neighbors) tuples.  The "point" is a 
+    string: the items from a "point" list of strings joined and tab-delimited.
+    The "number of neighbors" is an integer.
+    '''
+    from babaseWriteHelpers import isType
+    from constants import pntAbbrev, neighborAbbrev
+    
+    lastPoint = 'NONE YET'
+    pointsAndCounts = {}
+    pointsAndCounts[lastPoint[:]] = 0
+    
+    for line in dataLines:
+        if isType(line, pntAbbrev):
+            lastPoint = '\t'.join(line)
+            pointsAndCounts[lastPoint[:]] = 0
+        elif isType(line, neighborAbbrev):
+            pointsAndCounts[lastPoint[:]] += 1
+    
+    return sorted(pointsAndCounts.items(), key = lambda pair: pair[0])
+
+def checkNotesNoFocals(dataLines):
+    '''
+    Checks data in dataLines for "note" lines on days with no focal samples
+    recorded.  This is important, because these notes will not be recorded
+    in Babase.
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of list of strings: the "note" lines on days with no focals.
+    '''
+    from babaseWriteHelpers import isType
+    from constants import focalAbbrev, noteAbbrev
+    
+    focalDates = set()
+    notes = []
+    
+    for line in dataLines:
+        if isType(line, focalAbbrev):
+            focalDates.add(line[2]) # Add the focal date
+        elif isType(line, noteAbbrev):
+            notes.append(line)
+    
+    return [note for note in notes if note[2] not in focalDates]
 
 def countLines(dataLines, sampleType=''):
     '''
@@ -234,26 +303,26 @@ def errorAlertSummary(dataLines):
     Reads the data in dataLines and lists cases of apparent errors in the data.
     Also brings alerts to things that may not be "wrong" but may indicate
     problems:
-        (* = Done)
-        -- *Same focal collected more than once/day
-        -- *More than 1 group sampled in a single day
-        -- *Focals with overlapping times
-        -- *Focals with no data at all
-        -- *Focals with no points
-        -- *Points w/ no neighbors (exclude out of sight points)
+        -- Same focal collected more than once/day
+        -- More than 1 group sampled in a single day
+        -- Focals with overlapping times
+        -- Focals with no data at all
+        -- Focals with no points
+        -- Points w/ no neighbors (exclude out of sight points)
+        -- Neighbors w/o a preceding PNT
         -- Points w/ >3 neighbors
         -- Neighbors w/o an N0/N1/N2 code
-        -- Neighbors w/o a preceding PNT
         -- Notes on days w/o any focals
         -- Actor == Actee
         
-        Harder to add, but maybe worth it:
+        Not implemented, but maybe worth adding:
         -- JM's AS/OS/DSing AF's
         -- Actor/actee in different groups
     
     Returns a single string that will include several line breaks.
     '''
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue
+    from babaseWriteHelpers import isType
+    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, p8_nghcodes
     
     alertLines = []
 
@@ -297,11 +366,42 @@ def errorAlertSummary(dataLines):
     commentLine = writeAlert('in-sight points w/o neighbors', alertData) + '\n'
     alertLines.append(commentLine)
     
+    # Check for neighbors without a preceding point. This occurs in two
+    # different ways: Neighbor lines occur just after a focal starts and before
+    # any points, or a point is followed by >3 neighbors
+    
+    # First, neighbors after focals
+    alertData = theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev], [neighborAbbrev])
+    alertData = ['\t'.join(line) for line in alertData]
+    commentLine = writeAlert(('header-then-neighbor, with no ' + pntAbbrev), alertData) +'\n'
+    alertLines.append(commentLine)
+    
+    # Second, points with >3 neighbors
+    alertData = [pair[0] for pair in checkNeighborsPerPoint(dataLines) if pair[1] > 3]
+    commentLine = writeAlert('points with >3 neighbors', alertData) + '\n'
+    alertLines.append(commentLine)
+    
+    # Check for neighbors without appropriate neighbor codes
+    alertData = ['\t'.join(line) for line in dataLines if isType(line, neighborAbbrev) and line[-1] not in p8_nghcodes]
+    commentLine = writeAlert('neighbors w/o neighbor codes', alertData) + '\n'
+    alertLines.append(commentLine)
+    
+    # Check for notes on days without any focals
+    alertData = ['\t'.join(line) for line in checkNotesNoFocals(dataLines)]
+    commentLine = writeAlert('notes on days without any focals', alertData) + '\n'
+    alertLines.append(commentLine)
+    
+    # Check for data where actor is actee, or focal is neighbor
+    alertData = ['\t'.join(line) for line in checkActorIsActee(dataLines)]
+    commentLine = writeAlert('lines where actor is actee, or focal is neighbor', alertData) + '\n'
+    alertLines.append(commentLine)
+    
     return '\n'.join(alertLines)
 
 def findOverlaps(thisHdrLine, otherHdrs):
     '''
-    thishdrLine is a list of strings, a "header" line indicating a new focal sample.
+    thishdrLine is a list of strings, a "header" line indicating a new focal
+    sample.
     
     otherHdrs is a list of lists of strings. These are all the "header" lines.
     
@@ -381,10 +481,10 @@ def sameDate(eventLine1, eventLine2):
     date2 = datetime.strptime(eventLine2[2],'%Y-%m-%d')
     return date1 == date2
 
-def theseWithoutThose(dataLines, theseType, thoseTypes):
+def theseWithoutThose(dataLines, thisType, notThose, butYesThem = []):
     '''
-    Checks the data in dataLines and collects lines of "type" theseType that
-    don't have any thoseTypes lines after them before the next theseType line.
+    Checks the data in dataLines and collects lines of "type" thisType that
+    don't have any notThose lines after them before the next thisType line.
     For example, in the data below:
         1 HDR datadatadatadata
         2 PNT datadatadatadata
@@ -393,41 +493,66 @@ def theseWithoutThose(dataLines, theseType, thoseTypes):
         5 PNT datadatadatadata
         6 NGH datadatadatadata
     
-        theseWithoutThose(theseData, HDR, [PNT]) would not return line 1 or 4
+        theseWithoutThose(theData, HDR, [PNT]) would not return line 1 or 4
         because a PNT line occurs before the next HDR or before the end of data.
         Only line 3 would be returned.
         
-        theseWithoutThose(theseData, PNT, [NGH]) would return line 2 but not 5.
+        theseWithoutThose(theData, PNT, [NGH]) would return line 2 but not 5.
+        
+    If the optional "butYesThem" is given, then also add the qualification that
+    at least one line of at least one type in butYesThem must also occur before
+    the next "thisType" line. For example given "theData" above:
+        
+        theseWithoutThose(theData, HDR, [PNT], [NGH]) would return no lines.
+        
+        theseWithoutThose(theData, HDR, [NGH], [PNT]) would return only line 1.
     
-    dataLines is a list of list of strings, presumed to be all the data from a
+    dataLines is a list of lists of strings, presumed to be all the data from a
     file, stripped and split. [0] in each list of strings is the "type" of data
     recorded in that line.
     
-    theseType is a string, indicating which line types to check for. thoseTypes
-    is a list of strings indicating which line types can't follow theseType
-    lines.
+    thisType is a string, indicating which line types to check for. notThose
+    is a list of strings indicating which line types can't follow thisType
+    lines. butYesThem is also a list of strings.
     
-    theseType cannot be in thoseTypes.
+    thisType and any items in butYesThem cannot be in notThose.
     
     Returns a list of lists of strings.
-    '''
+    '''    
     from babaseWriteHelpers import isType
+    
+    if thisType in notThose:
+        return ['ERROR (' + thisType + ': Cannot exclude an item type from itself']
+    for this in butYesThem:
+        if this in notThose:
+            return ['ERROR (' + this + '): Cannot require and forbid an item type'] 
     
     these = []
     maybeYes = []
+    yesFound = False
     
-    if theseType in thoseTypes:
-        return ['ERROR: Cannot exclude an item type from itself'] 
+    checkYes = False
+    if len(butYesThem) > 0:
+        checkYes = True
     
     for line in dataLines:
         if maybeYes == []:
-            if isType(line, theseType):
+            if isType(line, thisType):
                 maybeYes = line[:]
+                if checkYes:
+                    yesFound = False
         else: #maybeYes is not empty, so there's a candidate for "these"
-            if line[0] in thoseTypes: # maybeYes is a "these" but not "without those"
+            if line[0] in notThose: # maybeYes is a "these" but not "without those"
                 maybeYes = []
-            elif isType(line, theseType): # maybeYes didn't have any of "those". Add it to "these"
-                these.append(maybeYes)
+                if checkYes:
+                    yesFound = False
+            elif checkYes and line[0] in butYesThem: #found a "butYesThem"
+                yesFound = True
+            elif isType(line, thisType): # maybeYes didn't have any of "notThose"
+                if checkYes and not yesFound: #maybeYes didn't have any of "butYesThem"
+                    pass
+                else:
+                    these.append(maybeYes)
                 maybeYes = line[:]
     
     if maybeYes != []: # we have a maybeYes and got to end of data without finding any of "those". Add it.
@@ -444,9 +569,9 @@ def writeAlert(checkFor, alertData):
     Returns a single string that will contain one or more newlines.  It is of
     the format:
         'Check for (checkFor): [NONE/FOUND]
-        \t alertData[0]
+        \talertData[0]
         ...
-        \t alertData[n]'
+        \talertData[n]'
     
     The first line will end with "NONE" if len(alertData) is 0, otherwise
     "FOUND".
