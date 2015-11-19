@@ -8,7 +8,7 @@ Functions involved with reading processed Prim8 data and writing SQL to add the 
 '''
 
 from babaseWriteHelpers import *
-from CodeWarrior.Standard_Suite import lines
+from babaseSQL import selectThisLine
 
 def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     '''
@@ -48,6 +48,11 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     sqlOut.append('BEGIN;\n') #Add text to start an SQL transaction
     
     for line in dataLines:
+        if line[0] == noteAbbrev:
+            continue # Because we've already dealt with all the notes
+
+        outLine = selectThisLine(line)
+        sqlOut.append(outLine)
         if line[0] == focalAbbrev:
             lastFocal = line[:]
             pntNum = 0
@@ -61,6 +66,8 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
             sampleNotes = allNotes[lineString]
             if len(sampleNotes) > 0:
                 for note in sampleNotes:
+                    outLine = selectThisLine(note)
+                    sqlOut.append(outLine)
                     outLine = newNote(note)
                     sqlOut.append(outLine)
 
@@ -82,9 +89,6 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
         elif line[0] == adlibAbbrev:
             outLine = newInteraction(line, lastFocal)
             sqlOut.append(outLine)
-            
-        elif line[0] == noteAbbrev:
-            continue # Because we've already dealt with all the notes
     
     # Correct instances of 'NULL' to just say NULL 
     sqlOut = [line.replace("'NULL'", "NULL") for line in sqlOut]

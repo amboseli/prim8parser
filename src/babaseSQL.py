@@ -188,3 +188,21 @@ def insertALLMISCS_SQL(atime, txt):
     print insLine
     return insLine
 
+def selectThisLine(dataLine):
+    '''
+    Returns a "select [dataLine];" string. In case there's an error or issue
+    during import to Babase, this helps make it clear which statement is causing
+    the trouble.
+    
+    dataLine is a list of strings. It is joined together and tab-delimited
+    before being written in the returned "select" statement.
+    '''
+    from babaseWriteHelpers import sqlizeApostrophes
+    
+    thisLine = sqlizeApostrophes('\t'.join(dataLine))
+    selLine = '''
+        SELECT '{0}' as line;
+    '''.format(thisLine)
+    
+    print selLine
+    return selLine
