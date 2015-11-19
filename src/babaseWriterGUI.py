@@ -105,7 +105,7 @@ class babaseWriterGUI(Frame):
         '''
         The 2 inputs should be the 2 StrVar values added by the user in the GUI.
         
-        After checking the integrity of the inputs, adds data about overlapping focals from the second file to the end of the first file.
+        After checking the integrity of the inputs, writes SQL to add data to Babase.
         '''
         #Convert the StrVars to strings
         value1 = str(input1.get())
