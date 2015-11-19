@@ -318,6 +318,19 @@ def newNote(dataLine):
     from babaseSQL import insertALLMISCS_SQL
     
     atime = dataLine[3]
-    txt = dataLine[4]
+    txt = (sqlizeApostrophes(dataLine[4])).upper()
     
     return insertALLMISCS_SQL(atime, txt)
+
+def sqlizeApostrophes(someString):
+    '''
+    Checks a string for apostrophes (aka "single-quotes"). If found, replaces it
+    with 2 of them. Returns the string with replacements made (if any).
+    
+    Used for strings that are meant to be added to a particular field in the
+    database.  Without this, the single quotes in some note strings can
+    prematurely end an SQL command.
+    '''
+    apost = "'"
+    someString = someString.replace(apost, (apost+apost))
+    return someString
