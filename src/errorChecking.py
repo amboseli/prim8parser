@@ -41,12 +41,12 @@ def errorCheck (inFilePath, outFilePath):
     outMsg = "Finished checking data in " + path.basename(inFilePath)
     print outMsg
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     
     #impPath = askopenfilename(filetypes=(('Tab-delimited','*.txt'),('All files','*.*')), title='Select a processed prim8 file:')
-    impPath = './../output_test.txt'
+#    impPath = './../output_test.txt'
 
     #outPath = asksaveasfilename(defaultextension='.txt', title='Name for the error summary file?')
-    outPath = './../file_summary.txt'
+#    outPath = './../file_summary.txt'
     
-    errorCheck(impPath, outPath)
+#    errorCheck(impPath, outPath)

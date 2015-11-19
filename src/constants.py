@@ -75,11 +75,18 @@ neighborsJuv[p8_nghcodes[0]] = '1'
 neighborsJuv[p8_nghcodes[1]] = '2'
 neighborsJuv[p8_nghcodes[2]] = '3'
 
-# Unknown neighbor snames used in Prim8, and their Babase counterparts
+# "Unknown" snames used in Prim8, and their Babase counterparts
 unknSnames = {}
 unknSnames['997'] = '997'
 unknSnames['998'] = '998'
+unknSnames['NULL'] = 'NULL'
 unknSnames['XXX'] = 'NULL'
+
+# Codes used in Prim8 when sname was not known at the time.
+# Any incidence of these will need to be corrected before upload to Babase.
+immigrantCode = 'IMM' #For new, not-yet-named immigrant males
+infantCode = 'INF' #For new, not-yet-named infants
+unnamedCodes = [immigrantCode, infantCode]
 
 # Codes representing focal sample "types" (adult females vs. juveniles)
 stypeAdultFem = 'FEM'
