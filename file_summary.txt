@@ -1,22 +1,77 @@
-2015-08-12 12:23:32 analysis of file /Users/jg177/Documents/Eclipse Workspaces/workspace/Prim8_Data_Reader/output_test.txt
+2015-11-03 17:09:53 analysis of file: output_test.txt
 
-Data begins at 2015-07-28 15:26:02 and ends at 2015-07-29 11:25:38
+------General summary of data:
 
-207 total data lines recorded.
-30 points recorded during 5 focal samples.
-103 ad-lib interactions recorded.
-3 free-form text notes recorded.
+Data begins 2015-10-10 10:00:00 and ends 2015-10-16 10:44:26
+Number of all lines:		3361
+Number of HDR lines:		87
+Number of PNT lines:		734
+Number of NGH lines:		2035
+Number of ADL lines:		487
+Number of TXT lines:		18
 
-Errors and alerts:
 
-No duplicate (sname, date) focal samples!
+HDR Lines Collected Per Day:
+	2015-10-10:	0
+	2015-10-12:	20
+	2015-10-13:	19
+	2015-10-14:	16
+	2015-10-15:	16
+	2015-10-16:	16
 
-Observer looks OK!
+------Alerts and Errors:
 
-Line 41: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:25:44', 'WAJ', 'OS', 'NULL']
-Line 44: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:28:18', 'NAP', 'OS', 'NULL']
-Line 54: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:39:39', 'LAH', 'G', 'NULL']
-Line 55: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:39:47', 'LAH', 'G', 'NULL']
-Line 56: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:40:27', 'LAH', 'G', 'NULL']
-Line 57: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '08:40:42', 'LAH', 'G', 'NULL']
-Line 192: Actee is NULL in ['ADL', 'SNS', '2015-07-29', '11:16:01', 'ROW', 'DS', 'NULL']
+Check for duplicate (date, sname) pairs: FOUND
+	2015-10-12	RAN
+	2015-10-12	VEM
+	2015-10-12	EAS
+	2015-10-13	YUG
+	2015-10-13	EMI
+	2015-10-13	IGU
+
+Check for >1 group sampled in a day: NONE
+
+Check for overlapping focals: FOUND
+	2015-10-12 15:11:22 VEM, 2015-10-12 15:12:44 VEM
+	2015-10-12 15:11:22 VEM, 2015-10-12 15:22:52 EAS
+	2015-10-12 15:22:52 EAS, 2015-10-12 15:24:17 EAS
+	2015-10-12 15:22:52 EAS, 2015-10-12 15:25:12 EAS
+	2015-10-12 15:22:52 EAS, 2015-10-12 15:33:30 RAN
+	2015-10-12 15:24:17 EAS, 2015-10-12 15:25:12 EAS
+	2015-10-12 15:24:17 EAS, 2015-10-12 15:33:30 RAN
+	2015-10-12 15:24:17 EAS, 2015-10-12 15:35:46 RAN
+	2015-10-12 15:33:30 RAN, 2015-10-12 15:35:46 RAN
+	2015-10-12 15:33:30 RAN, 2015-10-12 15:37:01 RAN
+	2015-10-12 15:35:46 RAN, 2015-10-12 15:37:01 RAN
+	2015-10-13 07:32:59 IGU, 2015-10-13 07:35:15 IGU
+	2015-10-13 10:22:25 EMI, 2015-10-13 10:24:52 EMI
+	2015-10-13 10:24:52 EMI, 2015-10-13 10:34:34 YUG
+	2015-10-13 10:34:34 YUG, 2015-10-13 10:37:40 YUG
+
+Check for focal samples with no data: FOUND
+	HDR	SNS	2015-10-12	15:11:22	VOG	VEM	JUV	15:23:22
+
+Check for focal samples without points: FOUND
+	HDR	SNS	2015-10-12	15:11:22	VOG	VEM	JUV	15:23:22
+	HDR	SNS	2015-10-12	15:24:17	VOG	EAS	FEM	15:36:17
+
+Check for in-sight points w/o neighbors: FOUND
+	PNT	SNS	2015-10-14	10:28:06	NAR	LUV	G2NN	NULL
+	PNT	SNS	2015-10-16	07:28:12	ACA	LUP	W1AN	NULL
+
+Check for header-then-neighbor, with no PNT: FOUND
+	HDR	SNS	2015-10-12	15:24:17	VOG	EAS	FEM	15:36:17
+
+Check for points with >3 neighbors: FOUND
+	PNT	SNS	2015-10-12	14:01:21	VOG	RIA	F2	NULL	XXD
+
+Check for neighbors w/o neighbor codes: FOUND
+	NGH	SNS	2015-10-15	17:47:10	HOK	CON	N	HAS
+
+Check for notes on days without any focals: FOUND
+	TXT	SNS	2015-10-10	10:00:00	Jake's test note
+
+Check for lines where actor is actee, or focal is neighbor: FOUND
+	ADL	SNS	2015-10-12	01:44:27	VOG	VOM	G	VOM
+	NGH	SNS	2015-10-12	14:01:35	VOG	RIA	N	RIA	N0
+
