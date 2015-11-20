@@ -4,18 +4,30 @@ Created on 28 Oct 2015
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 from errorCheckingHelpers import dataSummary, errorAlertSummary, writeHeader
+from constants import textBoundary
 from os import path
 
 def errorCheck (inFilePath, outFilePath):
     '''
     Checks the data in the file at inFilePath for possible errors.
     Also does some counting of basic statistics about the data, e.g. (how many focals, how many adlibs, etc.)
-    Errors, alerts, and statistics will be written to the file at outFilePath. 
+    Errors, alerts, and statistics will be written to the file at outFilePath.
+        If outFilePath already existed, everything already there will be
+        retained. New data will be added to the top, followed by what was
+        already there.
     Prints a message that the process is complete.
     Returns nothing.
     '''
+    # Check if previous summary exists
+    prevData = [] # To hold previous data, if any
+    if path.isfile(outFilePath):
+        print "Getting previous data from:", path.basename(outFilePath) 
+        outFile = open(outFilePath,'ru')
+        prevData = outFile.readlines()
+        outFile.close()
+    
     print "Creating export file:", path.basename(outFilePath) 
-    outFile = open(outFilePath,'w')
+    outFile = open(outFilePath,'wu')
     
     outMsg = writeHeader(inFilePath) 
     outFile.write(outMsg + '\n\n')
@@ -35,6 +47,11 @@ def errorCheck (inFilePath, outFilePath):
     print "Getting errors and alerts summary"
     outMsg = errorAlertSummary(allEvents)
     outFile.write(outMsg + '\n')
+
+    if len(prevData) > 0:
+        outMsg = textBoundary + textBoundary
+        outFile.write(outMsg + '\n')
+        outFile.writelines(prevData)
 
     print "Closing export file"
     outFile.close()

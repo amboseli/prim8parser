@@ -102,3 +102,6 @@ focalFeeding = 'F'
 
 # Necessary prefix for any text notes to be recorded in the ALLMISCS table
 allMiscsPrefix = 'O, '
+
+# Divider for output text files, to divide up sections
+textBoundary = '-----------------------------------------------------------------------\n'
