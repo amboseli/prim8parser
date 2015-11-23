@@ -173,18 +173,28 @@ def insertACTOR_ACTEES_SQL(inFocal, observer, date, start, actor, act, actee):
     print insLine
     return insLine
 
-def insertALLMISCS_SQL(atime, txt):
+def insertALLMISCS_SQL(atime, txtPrefix, txt):
     '''
-    All parameters are strings, and they indicate values to be added to columns of the same name.
+    atime and txt are strings, and they indicate values to be added to columns
+    of the same name.  txtPrefix is a special value added to txt and required by
+    Babase:
     
-    Returns a string: an SQL "insert" command to add a line to the ALLMISCS table in Babase.
+    An artifact of the previous technology, the ALLMISCS.txt column requires
+    that every field begin with a one-character code that indicates what kind of
+    note is being made, then a comma.  For example:
+        BAD: "Missed point because reasons"
+        GOOD: "O, Missed point because reasons"
+        (In this example, the "O" stands for "other")
+    
+    Returns a string: an SQL "insert" command to add a line to the ALLMISCS
+    table in Babase.
     '''
-    from constants import allMiscsPrefix
+    fullText = txtPrefix + ',' + txt
     
     insLine = '''
         INSERT INTO babase.allmiscs(sid, atime, txt)
             VALUES((SELECT currval('samples_sid_seq'::regclass)), '{0}', '{1}');
-    '''.format(atime, allMiscsPrefix + txt)
+    '''.format(atime, fullText)
     print insLine
     return insLine
 

@@ -15,6 +15,19 @@ def isType(dataLine, sampleType):
     '''
     return dataLine[0] == sampleType
 
+def checkIfBehavior(dataLine, ifBehavs):
+    '''
+    Checks if the behavior in the given line of data is a member of the string list ifBehavs.
+    
+    Returns True if in the list, False if not.  Also returns False if dataLine doesn't have enough fields to check a behavior.
+    '''
+    # Make sure dataLine has a behavior field to check
+    if len(dataLine) < 7:
+        print "Can't check for invalid behaviors, line is too short:", dataLine
+        return True
+    
+    return dataLine[6] in ifBehavs
+
 def countMins(dataLines):
     '''
     dataLines is a list of lists of strings, presumably the result of a "readlines" from a data file
@@ -98,7 +111,7 @@ def collectTxtNotes(dataLines):
     for note in orphanNotes:
         for line in theData:
             if isType(line, focalAbbrev) and sameDate(note, line):
-                focalNotes['\t'.join(lastFocal)].append(line)
+                focalNotes['\t'.join(line)].append(note)
                 break # Stop looping through all of the data. We only want the first focal.
     
     return focalNotes
@@ -284,17 +297,24 @@ def newNeighbor(dataLine, currFocal):
 
 def newInteraction(dataLine, lastFocal):
     '''
+    Parses data from the line needed to write the SQL "insert" command.  lastFocal is used
+        to determine if dataLine was recorded within lastFocal's duration.  If
+        the line notes a behavior that we've designated as not okay for import
+        to Babase, inserts it as a text note instead.
+    
     dataLine is a list of strings representing a single line read from the Prim8 data file.
         It should contain data about an adlib/all-occurrences interaction.
     lastFocal is a list of strings representing the last focal sample begun before the event
         in dataLine. It may be empty.
     
-    Parses data from the line needed to write the SQL "insert" command.  lastFocal is used
-        to determine if dataLine was recorded within lastFocal's duration.
-    
     Returns a string: the SQL statement.
     '''
     from babaseSQL import insertACTOR_ACTEES_SQL
+    from constants import saveAsNotes
+    
+    # Check if this interaction should be recorded as a note
+    if checkIfBehavior(dataLine, saveAsNotes):
+        return newNoteFromOther(dataLine)
     
     inFocal = behavDuringFocal(lastFocal, dataLine)
     observer = dataLine[1]
@@ -308,19 +328,61 @@ def newInteraction(dataLine, lastFocal):
 
 def newNote(dataLine):
     '''
-    dataLine is a list of strings representing a single line read from the Prim8 data file.
-        It should contain data about a free-form text note.
+    Parses data from the line needed to write the SQL "insert" command. Because
+    all text notes stored in Babase require it, adds a text "prefix" (one
+    character) to the beginning of the note.  Also checks the text of the actual
+    note for apostrophes, and adds an extra to ensure that the
+    "single-quote" doesn't break any SQL.
     
-    Parses data from the line needed to write the SQL "insert" command.
-    
+    dataLine is a list of strings representing a single line read from the Prim8
+    data file. It should contain data about a free-form text note.
+                
+    If the text of the note appears to be a consort, the text prefix will be the
+    special code used for consorts. Otherwise, the usual prefix for
+    miscellaneous/"other" notes will be used.
+
     Returns a string: the SQL statement.
     '''
     from babaseSQL import insertALLMISCS_SQL
+    from constants import bb_consort, allMiscsPrefixConsort, allMiscsPrefixOther
+    from errorCheckingHelpers import behaviorsInNote
     
     atime = dataLine[3]
+
+    txtPrefix = allMiscsPrefixOther
+    if behaviorsInNote(dataLine, [bb_consort]):
+        txtPrefix = allMiscsPrefixConsort
+    
     txt = (sqlizeApostrophes(dataLine[4])).upper()
     
-    return insertALLMISCS_SQL(atime, txt)
+    return insertALLMISCS_SQL(atime, txtPrefix, txt)    
+
+def noteFromOther(dataLine):
+    '''
+    Takes the data from dataLine and rewrites it as a note line.  
+    
+    dataLine is a list of strings.
+    
+    Returns a list of strings.
+    '''
+    from constants import noteAbbrev
+    
+    newDataLine = dataLine[:4]
+    newDataLine[0] = noteAbbrev
+        
+    noteText = ' '.join(dataLine[5:])
+    newDataLine.append(noteText)
+    
+    return newDataLine
+
+def newNoteFromOther(dataLine):
+    '''
+    Given a line of data, returns an SQL string to import that line as a text
+    note instead of its original data type.
+    '''
+    correctedData = noteFromOther(dataLine)
+    
+    return newNote(correctedData)
 
 def sqlizeApostrophes(someString):
     '''

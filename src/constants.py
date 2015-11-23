@@ -19,6 +19,15 @@ pntAbbrev = 'PNT'
 proxBehavName = 'proximity'
 outOfSightValue = 'OOS'
 
+# Special values from Babase for behaviors
+bb_agonism_A = 'AS'
+bb_agonism_D = 'DS'
+bb_agonism_O = 'OS'
+bb_groom = 'G'
+bb_mount = 'M'
+bb_ejaculation = 'E'
+bb_consort = 'C'
+
 # Tables in the main Prim8 data file.
 # These NEED to be spelled the same way as they are in the file. Case sensitive.
 p8adlib = 'adlib'
@@ -60,7 +69,7 @@ palmtops['SC'] = 'Samsung Tablet C'
 palmtops['SD'] = 'Samsung Tablet D'
 
 # Used when compiling agonisms
-agonismCodes = ['AS', 'OS', 'DS']
+agonismCodes = [bb_agonism_A, bb_agonism_D, bb_agonism_O]
 
 # Neighbor codes used in Prim8, and their Babase counterparts
 p8_nghcodes = ['N0', 'N1', 'N2']
@@ -100,8 +109,14 @@ stypesBabase[stypeJuv] = 'J'
 # Focal activity that indicates feeding
 focalFeeding = 'F'
 
-# Necessary prefix for any text notes to be recorded in the ALLMISCS table
-allMiscsPrefix = 'O, '
+# Prefixes for text to be recorded in the ALLMISCS table
+#   This is clunky, an artifact of how these data used to be recorded.  See
+#   Babase documentation of the ALLMISCS table for more info.
+allMiscsPrefixConsort = 'C'
+allMiscsPrefixOther = 'O'
+
+# Behaviors recorded as adlibs that we want saved only as notes, not adlibs
+saveAsNotes = [bb_mount, bb_ejaculation, bb_consort]
 
 # Divider for output text files, to divide up sections
 textBoundary = '-----------------------------------------------------------------------\n'

@@ -3,6 +3,29 @@ Created on 6 Aug 2015
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
+def behaviorsInNote (dataLine, criteriaBehavs):
+    '''
+    Checks the data at the end of dataLine (the string at [-1]) to see if any of
+    the behaviors in criteriaBehavs (a list of strings) occur as space-delimited
+    substrings (case-insensitive).  Returns True if yes, False if no.
+    
+    For example, given this dataLine:
+        ['TXT', 'AAA', '1944-06-06', '12:34:56', 'A busy day today']
+        
+            behaviorsInNote(dataLine, ['a'])  is True, because 'a' occurs by
+            itself, not part of a larger word
+            behaviorsInNote(dataLine, ['b']) is False, because although 'b' does
+            occur, it's not its own word
+    '''
+    theNote = dataLine[-1].split()
+    theNote = [item.upper() for item in theNote]
+    
+    for behav in criteriaBehavs:
+        if behav.upper() in theNote:
+            return True
+    
+    return False
+
 def checkActorActeeNotReal(dataLines):
     '''
     Checks ad-lib lines in dataLines for cases where either the actor or actee
@@ -40,6 +63,22 @@ def checkActorIsActee(dataLines):
     
     return [line for line in linesOfInterest if line[5] == line[7]]
 
+def checkBehavsInNotes(dataLines, criteriaBehavs):
+    '''
+    Checks all "note" lines for cases where any of the behaviors in
+    criteriaBehavs occur.
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of lists of strings: the lines where this is true.
+    '''
+    from babaseWriteHelpers import isType
+    from constants import noteAbbrev
+    
+    notes = [line for line in dataLines if isType(line, noteAbbrev)]
+    
+    return [note for note in notes if behaviorsInNote(note, criteriaBehavs)]
 
 def checkDuplicateFocals(dataLines):
     '''
@@ -188,6 +227,21 @@ def checkNotesNoFocals(dataLines):
     
     return [note for note in notes if note[2] not in focalDates]
 
+def checkSpecificBehavior(dataLines, specBehaviors):
+    '''
+    Check each line in dataLines to see if the "behavior" in that line (if any)
+    is in specBehaviors (list of strings).
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of lists of strings: each line that does have the specific
+    behavior(s).
+    '''
+    from babaseWriteHelpers import checkIfBehavior
+    
+    return [line for line in dataLines if len(line)>=7 and checkIfBehavior(line, specBehaviors) ]
+
 def countLines(dataLines, sampleType=''):
     '''
     dataLines is a list of list of strings, presumed to be all the data from a
@@ -335,7 +389,8 @@ def errorAlertSummary(dataLines):
         -- Notes on days w/o any focals
         -- Actor == Actee
         -- Actor or Actee is a non-sname placeholder (NULL, XXX, 998, etc.)
-        -- Consecutive lines with identical data after the time stamp
+        -- Notes lines possibly containing mounts, ejaculations, or consorts
+        -- Non-note lines that recorded mounts, ejaculations, or consorts
         
         Not implemented, but maybe worth adding:
         -- JM's AS/OS/DSing AF's
@@ -344,7 +399,7 @@ def errorAlertSummary(dataLines):
     Returns a single string that will include several line breaks.
     '''
     from babaseWriteHelpers import isType
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, p8_nghcodes
+    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort
     
     alertLines = []
 
@@ -421,6 +476,17 @@ def errorAlertSummary(dataLines):
     # Check for data where actor or actee is a non-sname placeholder
     alertData = ['\t'.join(line) for line in checkActorActeeNotReal(dataLines)]
     commentLine = writeAlert('lines where actor or actee is a non-sname placeholder', alertData) + '\n'
+    alertLines.append(commentLine)
+    
+    # Check for notes that appear to contain mounts, ejaculations, or consorts
+    MEC_list = [bb_mount, bb_ejaculation, bb_consort]
+    alertData = ['\t'.join(line) for line in checkBehavsInNotes(dataLines, MEC_list)]
+    commentLine = writeAlert('notes that appear to contain mounts, ejaculations, or consorts', alertData) + '\n'
+    alertLines.append(commentLine)
+    
+    # Check for lines with mounts, ejaculations, or consorts recorded as regular, legit behaviors
+    alertData = ['\t'.join(line) for line in checkSpecificBehavior(dataLines, MEC_list)]
+    commentLine = writeAlert('lines with mounts, ejaculations, or consorts recorded as regular, legit behaviors', alertData) + '\n'
     alertLines.append(commentLine)
     
     return '\n'.join(alertLines)
