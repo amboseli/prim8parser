@@ -8,7 +8,7 @@ Functions involved with reading processed Prim8 data and writing SQL to add the 
 '''
 
 from babaseWriteHelpers import *
-from babaseSQL import selectThisLine
+from babaseSQL import deleteExtraSIDs, selectThisLine
 
 def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     '''
@@ -93,6 +93,10 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     # Correct instances of 'NULL' to just say NULL 
     sqlOut = [line.replace("'NULL'", "NULL") for line in sqlOut]
         
+    # Add SQL to remove samples that had no data
+    outLine = deleteExtraSIDs()
+    sqlOut.append(outLine)
+    
     # Wrap it all up
     transactionEnd = transactionCommit(commitTransaction) + "\n"
     sqlOut.append(transactionEnd)

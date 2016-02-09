@@ -6,6 +6,21 @@ Created on 25 Sep 2015
 Functions that return strings of SQL that can be used in Babase.
 '''
 
+def deleteExtraSIDs():
+    '''
+    Returns a string of SQL that will delete from Babase any sample IDs that:
+      1) were recorded in Prim8
+      2) have no points, ad-libs, or notes recorded during their duration
+    '''
+    outMsg = '''
+    DELETE FROM babase.samples
+        WHERE programid IN (select programid from programids where upper(pid_string) like '%AMBOPRIM8%')
+          AND minsis = 0
+          AND NOT EXISTS (SELECT 1 FROM babase.interact_data WHERE interact_data.sid=samples.sid)
+          AND NOT EXISTS (SELECT 1 FROM babase.allmiscs WHERE allmiscs.sid = samples.sid);
+    '''
+    return outMsg
+
 def lookupGroupNum_SQL(threeLtrGrp):
     '''
     threeLtrGrp is a string, the 3-letter code used in the data to refer to a group's name.
