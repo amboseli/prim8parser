@@ -45,7 +45,7 @@ class babaseWriterGUI(Frame):
         
         # Define buttons
         b1 = Button(root, text='Choose', command = lambda: self.getOpenFileAndAutofill(tv1, tv2))
-        b2 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv2))
+        b2 = Button(root, text='Choose', command = lambda: self.getSaveFileName(tv2))
         b3 = Button(root, text='Go!', command = lambda: self.writeAllSQL(tv1,tv2))
         b4 = Button(root, text='Quit', command = lambda: self.endProgram(root))
         
@@ -74,6 +74,14 @@ class babaseWriterGUI(Frame):
         
         print "Suggesting SQL file path:", suggestedOutPath
         textVariable2.set(suggestedOutPath)
+        
+    def getSaveFileName(self, textVariableSaveFile):
+        '''
+        Opens a dialog to ask for a file name to save/replace.  Sets textVariableSaveFile to hold the file's path (a string).
+        '''
+        filePath = asksaveasfilename(defaultextension='.sql', title='Name of the data file to write SQL to?')
+        print "Got output file path:", filePath
+        textVariableSaveFile.set(filePath)
         
     def endProgram(self, root):
         '''
