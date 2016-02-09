@@ -30,20 +30,21 @@ def behaviorsInNote(dataLine, criteriaBehavs):
 
 def checkActorActeeNotReal(dataLines):
     '''
-    Checks ad-lib lines in dataLines for cases where either the actor or actee
-    is noted as "NULL" or some other placeholder-type value.
+    Checks ad-lib and neighbor lines in dataLines for cases where either the
+    actor, actee, or neighbor is noted as "NULL" or some other placeholder-type
+    value.
     
     dataLines is a list of list of strings, presumed to be all the data from a
     file, stripped and split.
     
     Returns a list of lists of strings: the lines where this is true.
     '''
-    from constants import unknSnames, unnamedCodes, adlibAbbrev
+    from constants import unknSnames, unnamedCodes, adlibAbbrev, neighborAbbrev
     
     # Make a set of known "placeholder" codes to check for 
     plcHoldrs = set(unknSnames.keys()).union(unnamedCodes)
     
-    linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev)]
+    linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev) or isType(line, neighborAbbrev)]
     
     return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs]
 
@@ -502,7 +503,7 @@ def errorAlertSummary(dataLines):
         -- Neighbors w/o an N0/N1/N2 code
         -- Notes on days w/o any focals
         -- Actor == Actee
-        -- Actor or Actee is a non-sname placeholder (NULL, XXX, 998, etc.)
+        -- Actor, Actee, or Neighbor is a non-sname placeholder (NULL, XXX, 998, etc.)
         -- Notes lines possibly containing mounts, ejaculations, or consorts
         -- Non-note lines that recorded mounts, ejaculations, or consorts
         -- Mounts/Ejaculations/Consorts not during a focal
@@ -514,7 +515,7 @@ def errorAlertSummary(dataLines):
     
     Returns a single string that will include several line breaks.
     '''
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort
+    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2
     
     alertLines = []
 
@@ -593,13 +594,13 @@ def errorAlertSummary(dataLines):
     commentLine = writeAlert('lines where actor is actee, or focal is neighbor', alertData) + '\n'
     alertLines.append(commentLine)
     
-    # Check for data where actor or actee is a non-sname placeholder
+    # Check for data where actor, actee, or neighbor is a non-sname placeholder
     alertData = ['\t'.join(line) for line in checkActorActeeNotReal(dataLines)]
-    commentLine = writeAlert('lines where actor or actee is a non-sname placeholder', alertData) + '\n'
+    commentLine = writeAlert('lines where actor, actee, or neighbor is a non-sname placeholder', alertData) + '\n'
     alertLines.append(commentLine)
     
     # Check for notes that appear to contain mounts, ejaculations, or consorts
-    MEC_list = [bb_mount, bb_ejaculation, bb_consort]
+    MEC_list = [bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2]
     alertData = ['\t'.join(line) for line in checkBehavsInNotes(dataLines, MEC_list)]
     commentLine = writeAlert('notes that appear to contain mounts, ejaculations, or consorts', alertData) + '\n'
     alertLines.append(commentLine)

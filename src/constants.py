@@ -58,8 +58,8 @@ observationTables = [p8adlib, p8behaviorinstances, p8focalfollows]
 
 # Info about the current Prim8 version
 prim8Name = 'AMBOPRIM8'
-prim8Version = '1.150728'
-prim8Setup = 'JUL15' # Used to populate the "setupid" in babase. The name "setup" made more sense for Psion data. It makes less sense for Prim8.
+prim8Version = '1.151128'
+prim8Setup = 'DEC15' # Used to populate the "setupid" in babase. The name "setup" made more sense for Psion data. It makes less sense for Prim8.
 
 # Dictionary with abbreviations for all the tablets in use and their descriptions in Babase (PALMTOPS.Descr)
 palmtops = {}
@@ -120,3 +120,11 @@ saveAsNotes = [bb_mount, bb_ejaculation, bb_consort]
 
 # Divider for output text files, to divide up sections
 textBoundary = '-----------------------------------------------------------------------\n'
+
+# Long names for behaviors
+# Useful when checking for behavior notes in free-form text.
+# E.g. sometimes a note will be "AAA consort BBB" and not "AAA C BBB"
+bb_mount_long = 'mount'
+bb_ejaculation_long = 'ejaculate' #Pretty sure no one bothers to spell this out
+bb_consort_long = 'consort'
+bb_consort_long2 = 'consorting'
