@@ -327,6 +327,77 @@ def checkSpecificBehavior(dataLines, specBehaviors):
     
     return [line for line in dataLines if len(line)>=7 and checkIfBehavior(line, specBehaviors) ]
 
+def checkUniqueNeighbors(dataLines, sampleProtocols):
+    '''
+    Checks all the recorded neighbors for each point collected during
+    sampleProtocols samples to make sure that the list of neighbors is unique.
+    Ideally, only check juvenile samples because the adult female protocol
+    allows for some redundancy.  Returns a list of lists of strings: the point
+    lines that have non-unique neighbors, and all of the point's associated
+    neighbor lines.
+    
+    When considering uniqueness of neighbors, placeholder names (any names in
+    constants.unknSnames) are ignored.
+    
+    dataLines is a list of lists of strings, presumed to be all the data from a
+    file, stripped and split. sampleProtocols is a list of strings.
+    '''
+    from constants import unknSnames, focalAbbrev, pntAbbrev, neighborAbbrev
+    
+    # Make placeholders for iteration.
+    # Holds the last-read "header" line, but only for focals of the type(s) allowed by sampleProtocols
+    currentHeader = []
+    #Holds the last-read "point" line, but only if it was in an allowed focal 
+    currentPoint = []
+    
+    # Dictionary of points and neighbors.
+    myPnts = {}
+    #   Key: the point line--joined as a string
+    #   Value: list of the neighbor lines (as lists of strings) for the point
+    
+    
+    for line in dataLines:
+        if line[0] not in [focalAbbrev, pntAbbrev, neighborAbbrev]:
+            # Then we don't care about it for this question
+            continue
+        elif isType(line, focalAbbrev):
+            if line[6] in sampleProtocols: #This is a focal sample of interest
+                currentHeader = line[:]
+                currentPoint = []
+            else: #We don't care about any of the data in this focal
+                currentHeader = []
+                currentPoint = []
+                continue
+        # All that's left are points and neighbors. If currentHeader is empty, then we don't care about any of these.
+        elif currentHeader == []:
+            continue
+        # Only points and neighbors that actually happened during focals of interest are left
+        elif isType(line, pntAbbrev):
+            if sameDate(line, currentHeader): #This should always be true, but added here just in case
+                currentPoint = line[:]
+                myPnts['\t'.join(currentPoint)] = []
+        elif isType(line, neighborAbbrev):
+            if sameDate(line, currentPoint): #Again this should always be true, but added here just in case
+                myPnts['\t'.join(currentPoint)].append(line)
+    
+    # Get list of names that are allowed to be nonunique
+    fakeNames = unknSnames.keys()
+    
+    # Make list to hold the point and neighbor lines with nonunique neighbors
+    nonUniqueNeighbors = []
+    
+    for (point, neighbors) in myPnts.iteritems():
+        nghNames = []
+        for neighbor in neighbors: #Collect all the neighbor names into one list
+            if neighbor[7] not in fakeNames:
+                nghNames.append(neighbor[7])
+        if len(nghNames) > len(set(nghNames)): #Then 1 or more neighbors is redundant
+            nonUniqueNeighbors.append(point.split('\t'))
+            for neighbor in neighbors:
+                nonUniqueNeighbors.append(neighbor)
+
+    return nonUniqueNeighbors
+
 def countLines(dataLines, sampleType=''):
     '''
     dataLines is a list of list of strings, presumed to be all the data from a
@@ -500,6 +571,7 @@ def errorAlertSummary(dataLines):
         -- Points w/ no neighbors (exclude out of sight points)
         -- Neighbors w/o a preceding PNT
         -- Points w/ >3 neighbors
+        -- Points from juvenile samples with non-unique neighbors
         -- Neighbors w/o an N0/N1/N2 code
         -- Notes on days w/o any focals
         -- Actor == Actee
@@ -515,7 +587,7 @@ def errorAlertSummary(dataLines):
     
     Returns a single string that will include several line breaks.
     '''
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2
+    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, stypeJuv, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2
     
     alertLines = []
 
@@ -579,6 +651,11 @@ def errorAlertSummary(dataLines):
     commentLine = writeAlert('points with >3 neighbors', alertData) + '\n'
     alertLines.append(commentLine)
     
+    # Check for non-unique neighbors in juvenile samples
+    alertData = ['\t'.join(line) for line in checkUniqueNeighbors(dataLines, [stypeJuv])]
+    commentLine = writeAlert('non-unique neighbors in juvenile samples', alertData) + '\n'
+    alertLines.append(commentLine)
+        
     # Check for neighbors without appropriate neighbor codes
     alertData = ['\t'.join(line) for line in dataLines if isType(line, neighborAbbrev) and line[-1] not in p8_nghcodes]
     commentLine = writeAlert('neighbors w/o neighbor codes', alertData) + '\n'
