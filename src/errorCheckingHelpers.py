@@ -418,6 +418,8 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
             if neighbor[7] not in fakeNames:
                 nghNames.append(neighbor[7])
         if len(nghNames) > len(set(nghNames)): #Then 1 or more neighbors is redundant
+            if len(nonUniqueNeighbors) > 0: # For every instance after the first, add a newline first
+                nonUniqueNeighbors.append([]) # When this is output to file, a newline will be added
             nonUniqueNeighbors.append(point.split('\t'))
             for neighbor in neighbors:
                 nonUniqueNeighbors.append(neighbor)
