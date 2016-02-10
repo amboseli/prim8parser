@@ -30,21 +30,24 @@ def behaviorsInNote(dataLine, criteriaBehavs):
 
 def checkActorActeeNotReal(dataLines):
     '''
-    Checks ad-lib and neighbor lines in dataLines for cases where either the
-    actor, actee, or neighbor is noted as "NULL" or some other placeholder-type
-    value.
+    Checks ad-lib lines in dataLines for cases where either the actor or actee
+    is noted as "NULL" or some other placeholder-type value.
+    
+    This function is different from checkNeighborNotReal in that it uses a
+    different (larger) set of "placeholder" values.  Some of these values are
+    okay for use as neighbors.  See Babase documentation.
     
     dataLines is a list of list of strings, presumed to be all the data from a
     file, stripped and split.
     
     Returns a list of lists of strings: the lines where this is true.
     '''
-    from constants import unknSnames, unnamedCodes, adlibAbbrev, neighborAbbrev
+    from constants import unknSnames, unnamedCodes, adlibAbbrev
     
     # Make a set of known "placeholder" codes to check for 
     plcHoldrs = set(unknSnames.keys()).union(unnamedCodes)
     
-    linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev) or isType(line, neighborAbbrev)]
+    linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev)]
     
     return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs]
 
@@ -261,6 +264,29 @@ def checkMountsConsortsInvolvedFocal(dataLines):
                     outLines.append(line)
     
     return outLines
+
+def checkNeighborNotReal(dataLines):
+    '''
+    Checks neighbor lines in dataLines for cases where the neighbor is noted as
+    "INF" (a not-yet-named infant) or some other placeholder-type value.
+    
+    This function is different from checkActorActeeNotReal in that it uses a
+    different (smaller) set of "placeholder" values.  Some of values used as
+    neighbors are not allowed for use in ad-libs.  See Babase documentation.
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of lists of strings: the lines where this is true.
+    '''
+    from constants import unnamedCodes, neighborAbbrev
+    
+    # Make a set of known "placeholder" codes to check for 
+    plcHoldrs = set(unnamedCodes)
+    
+    linesOfInterest = [line for line in dataLines if isType(line, neighborAbbrev)]
+    
+    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs]
 
 def checkNeighborsPerPoint(dataLines):
     '''
@@ -575,7 +601,8 @@ def errorAlertSummary(dataLines):
         -- Neighbors w/o an N0/N1/N2 code
         -- Notes on days w/o any focals
         -- Actor == Actee
-        -- Actor, Actee, or Neighbor is a non-sname placeholder (NULL, XXX, 998, etc.)
+        -- Actor or Actee is a non-sname placeholder (NULL, XXX, 998, etc.)
+        -- Neighbor is a non-sname placeholder ('IMM', 'INF')
         -- Notes lines possibly containing mounts, ejaculations, or consorts
         -- Non-note lines that recorded mounts, ejaculations, or consorts
         -- Mounts/Ejaculations/Consorts not during a focal
@@ -671,9 +698,14 @@ def errorAlertSummary(dataLines):
     commentLine = writeAlert('lines where actor is actee, or focal is neighbor', alertData) + '\n'
     alertLines.append(commentLine)
     
-    # Check for data where actor, actee, or neighbor is a non-sname placeholder
+    # Check for data where actor or actee is a non-sname placeholder
     alertData = ['\t'.join(line) for line in checkActorActeeNotReal(dataLines)]
-    commentLine = writeAlert('lines where actor, actee, or neighbor is a non-sname placeholder', alertData) + '\n'
+    commentLine = writeAlert('lines where actor or actee is a non-sname placeholder', alertData) + '\n'
+    alertLines.append(commentLine)
+    
+    # Check for lines where neighbor is a non-sname placeholder (different placeholders from ad-libs)
+    alertData = ['\t'.join(line) for line in checkNeighborNotReal(dataLines)]
+    commentLine = writeAlert('lines where neighbor is a non-sname placeholder', alertData) + '\n'
     alertLines.append(commentLine)
     
     # Check for notes that appear to contain mounts, ejaculations, or consorts
