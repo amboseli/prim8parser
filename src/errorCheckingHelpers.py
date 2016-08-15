@@ -381,6 +381,9 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
     #   Key: the point line--joined as a string
     #   Value: list of the neighbor lines (as lists of strings) for the point
     
+    # Key for dictionary when neighbors are missing a point line
+    missingPntKey = '(MISSING POINT LINE)'
+    myPnts[missingPntKey] = []
     
     for line in dataLines:
         if line[0] not in [focalAbbrev, pntAbbrev, neighborAbbrev]:
@@ -403,7 +406,9 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
                 currentPoint = line[:]
                 myPnts['\t'.join(currentPoint)] = []
         elif isType(line, neighborAbbrev):
-            if sameDate(line, currentPoint): #Again this should always be true, but added here just in case
+            if currentPoint == []: #This should only happen if the observer messed up somewhere else
+                myPnts[missingPntKey].append(line)
+            elif sameDate(line, currentPoint):
                 myPnts['\t'.join(currentPoint)].append(line)
     
     # Get list of names that are allowed to be nonunique
@@ -502,6 +507,7 @@ def countPointsPerFocal(dataLines):
     
     focalCounts = {}
     lastFocal = 'NONE YET'
+    focalCounts[lastFocal] = 0
     
     for line in dataLines:
         if isType(line, focalAbbrev):
