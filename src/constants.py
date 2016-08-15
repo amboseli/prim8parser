@@ -67,6 +67,7 @@ palmtops['SA'] = 'Samsung Tablet A'
 palmtops['SB'] = 'Samsung Tablet B'
 palmtops['SC'] = 'Samsung Tablet C'
 palmtops['SD'] = 'Samsung Tablet D'
+palmtops['SE'] = 'Samsung Tablet E'
 
 # Used when compiling agonisms
 agonismCodes = [bb_agonism_A, bb_agonism_D, bb_agonism_O]
