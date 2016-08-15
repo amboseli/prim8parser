@@ -138,7 +138,7 @@ def insertNEIGHBORS_SQL(neighborID, ncode):
     print insLine
     return insLine
 
-def insertACTOR_ACTEES_SQL(inFocal, observer, date, start, actor, act, actee):
+def insertACTOR_ACTEES_SQL(inFocal, observer, date, start, actor, act, actee, handwritten='FALSE'):
     '''
     inFocal is a boolean indicating whether or not the behavior occurred during a focal sample.
     All other parameters are strings, and they indicate values to be added to columns of the same name.
@@ -162,14 +162,14 @@ def insertACTOR_ACTEES_SQL(inFocal, observer, date, start, actor, act, actee):
     
     if inFocal:
         insLine = '''
-        INSERT INTO babase.actor_actees(sid, observer, date, start, stop, actor, act, actee)
-            VALUES((SELECT currval('samples_sid_seq'::regclass)), '{0}', '{1}', '{2}', '{2}', '{3}', '{4}', '{5}');
-        '''.format(observer, date, start, actor, act, actee)
+        INSERT INTO babase.actor_actees(sid, observer, date, start, stop, actor, act, actee, handwritten)
+            VALUES((SELECT currval('samples_sid_seq'::regclass)), '{0}', '{1}', '{2}', '{2}', '{3}', '{4}', '{5}', {6});
+        '''.format(observer, date, start, actor, act, actee, handwritten)
     else:
         insLine = '''
-        INSERT INTO babase.actor_actees(observer, date, actor, act, actee)
-            VALUES('{0}', '{1}', '{2}', '{3}', '{4}');
-        '''.format(observer, date, actor, act, actee)
+        INSERT INTO babase.actor_actees(observer, date, actor, act, actee, handwritten)
+            VALUES('{0}', '{1}', '{2}', '{3}', '{4}', {5});
+        '''.format(observer, date, actor, act, actee, handwritten)
     print insLine
     return insLine
 
