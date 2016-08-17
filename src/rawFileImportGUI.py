@@ -10,6 +10,7 @@ from Tkinter import *
 from tkFileDialog import askopenfilename, asksaveasfilename
 from constants import prim8Name, prim8Version, prim8Setup
 from cleanRawFile import makeAllDicts, writeAll
+from os import path
 
 class rawFileImportGUI(Frame):
     '''
@@ -66,7 +67,7 @@ class rawFileImportGUI(Frame):
         e6.grid(row=5, column=1)
                 
         # Define buttons
-        b1 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv1))
+        b1 = Button(root, text='Choose', command = lambda: self.getOpenFileAndMakeGuesses(tv1, tv2, tv6))
         b2 = Button(root, text='Choose', command = lambda: self.getSaveFileName(tv2, tv6))
         b3 = Button(root, text='Import', command = lambda: self.compileData(tv1,tv2,tv3,tv4,tv5,tv6))
         b4 = Button(root, text='Close', command = lambda: self.endProgram(root))
@@ -85,6 +86,34 @@ class rawFileImportGUI(Frame):
         print "Got file path:", filePath
         textVariable.set(filePath)
     
+    def guessSaveFileName(self, openFileTV, saveFileTV):
+        '''
+        Using the path of the input file, guesses an appropriate path for the
+        output file.
+        
+        Assumes that the input file's path will be of the format:
+            [...]/YYyymmdd III SX/[input file name]
+                YYyymmdd: Date for this file, all numbers
+                III: Observer's initials
+                SX: Two-letter-code (usually "S" and a letter) indicating the
+                    tablet ID
+        
+        Output file name will be yymmddSX.txt, in the same directory as the
+        input file.
+        (Observer's initials are ignored in the new file name)
+        '''
+        inputFilePath = str(openFileTV.get())
+        saveDirPath = path.split(inputFilePath)[0]
+        saveDirName = path.split(saveDirPath)[1]
+        
+        splitSaveDir = saveDirName.split()
+        saveFileName = splitSaveDir[0][2:] + splitSaveDir[2] + '.txt'
+        print "Save file predicted to be named", saveFileName
+        saveFilePath = path.join(saveDirPath, saveFileName)
+        print "Save path predicted to be", saveFilePath
+        
+        saveFileTV.set(saveFilePath)
+
     def guessTabletID(self, filePath, textVariable):
         '''
         filePath is a string and a file path, presumably for the file that is written-to in this GUI.
@@ -94,6 +123,20 @@ class rawFileImportGUI(Frame):
         tabletID = filePath[-6:-4]
         print "Tablet ID predicted to be", tabletID 
         textVariable.set(tabletID)
+
+    def getOpenFileAndMakeGuesses(self, openFileTV, saveFileTV, tabletTV):
+        '''
+        Opens dialog asking for a file name to open, and uses that info to guess
+        other inputs.
+        '''
+        # Ask user for file to input
+        self.getOpenFileName(openFileTV)
+        
+        # Use path of input file to guess path of output file 
+        self.guessSaveFileName(openFileTV, saveFileTV)
+        
+        # Use path of output file to guess tablet ID
+        self.guessTabletID(str(saveFileTV.get()), tabletTV)
         
     
     def getSaveFileName(self, textVariableSaveFile, textVariableTabletID):
