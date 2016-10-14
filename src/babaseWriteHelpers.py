@@ -53,7 +53,9 @@ def countMins(dataLines):
     from constants import focalAbbrev, pntAbbrev
     
     numMins = {}
-    lastFocal = ''
+    lastFocal = 'NO FOCALS YET'
+    
+    numMins[lastFocal] = 0
     
     for line in dataLines:
         if isType(line, focalAbbrev):
