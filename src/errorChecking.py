@@ -35,6 +35,7 @@ def errorCheck (inFilePath, outFilePath):
     print "Opening import file:", path.basename(inFilePath)
     impFile = open(inFilePath, 'r')
     impEvents = impFile.readlines()
+    impFile.close()
        
     print "Adding all lines to allEvents list"
     allEvents =  [line.strip().split('\t') for line in impEvents] ##List of all lines read from the import file (impFile)
