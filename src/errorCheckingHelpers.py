@@ -176,6 +176,23 @@ def checkFocalOverlaps(dataLines):
             overlapHdrs.append((focal,overlap))
     return overlapHdrs
 
+def checkInvalidFocalTypes(dataLines):
+    '''
+    Checks all focal header lines for invalid focal sample types.  These will
+    occur, for example, if an observer accidentally starts a focal on an adult
+    male.
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of lists of strings: the lines where this is true.
+    '''
+    from constants import focalAbbrev, stypeAdultFem, stypeJuv
+    
+    focals = [line for line in dataLines if isType(line, focalAbbrev)]
+    
+    return [focal for focal in focals if focal[6] not in [stypeAdultFem, stypeJuv]]
+
 def checkMountsConsortsDuringFocal(dataLines):
     '''
     Checks if mounts, ejaculations, and consorts were recorded during a focal 
@@ -338,6 +355,36 @@ def checkNotesNoFocals(dataLines):
     
     return [note for note in notes if note[2] not in focalDates]
 
+def checkPointMatchesFocal(dataLines):
+    '''
+    Checks data in dataLines for "point" lines where the indicated focal
+    individual doesn't match the "current" focal individual and/or their dates
+    don't match.  "Current", meaning the individual listed in the most-recent
+    same-day focal header.  Includes any "point" lines where there is no most-
+    recent same-day focal header.
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a list of list of strings: the "point" lines that don't match the
+    current focal.
+    '''
+    from constants import focalAbbrev, pntAbbrev
+    
+    lastFocal = []
+    nonMatchingPoints = []
+    
+    for line in dataLines:
+        if isType(line, focalAbbrev):
+            lastFocal = line[:]
+        elif isType(line, pntAbbrev):
+            if lastFocal == []: #PNT with no HDR yet, report this
+                nonMatchingPoints.append(line)
+            elif not sameActor(lastFocal, line) or not sameDate(lastFocal, line):
+                nonMatchingPoints.append(line)
+
+    return nonMatchingPoints    
+
 def checkSpecificBehavior(dataLines, specBehaviors):
     '''
     Check each line in dataLines to see if the "behavior" in that line (if any)
@@ -352,6 +399,30 @@ def checkSpecificBehavior(dataLines, specBehaviors):
     from babaseWriteHelpers import checkIfBehavior
     
     return [line for line in dataLines if len(line)>=7 and checkIfBehavior(line, specBehaviors) ]
+
+def checkTooManyPoints(dataLines):
+    '''
+    Checks the data in dataLines for focals with more than 10 points.  Does not
+    count points that don't match the focal.
+    
+    The idea is to find samples where the observer recorded too many points.  If
+    too many points appear to have been recorded, but there's an obvious
+    alternate explanation (besides the observer simply recording too many), we
+    don't want the problem reported here.
+    
+    Returns a list of (Focal header as string, integer number of points) tuples.
+    '''
+    tooManyPoints = []
+    
+    nonMatchingPoints = checkPointMatchesFocal(dataLines)
+    theData = [line for line in dataLines if line not in nonMatchingPoints]
+    focalsDict = getPointsPerFocal(theData)
+    
+    for (focal, points) in sorted(focalsDict.items()):
+        if len(points) > 10:
+            tooManyPoints.append((focal, len(points)))
+    
+    return tooManyPoints    
 
 def checkUniqueNeighbors(dataLines, sampleProtocols):
     '''
@@ -431,6 +502,42 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
 
     return nonUniqueNeighbors
 
+def countFocalTypes(dataLines):
+    '''
+    Counts the number of lines in dataLines that are focal headers, grouped by
+    focal sample type (juvenile, adult female, or other).
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.
+    
+    Returns a dictionary whose keys are all the focal sample types that occur in
+    the data, and whose values are the number of times those lines occur.
+    '''
+    from constants import focalAbbrev, stypeAdultFem, stypeJuv, stypeOther
+    
+    allFocals = [line for line in dataLines if isType(line, focalAbbrev)]
+    
+    focalTypes = [stypeAdultFem, stypeJuv]
+    
+    focalsDict = {}
+    focalsDict[stypeAdultFem] = 0
+    focalsDict[stypeJuv] = 0
+    focalsDict[stypeOther] = 0
+    
+    for focal in allFocals:
+        if focal[6] in focalTypes:
+            focalsDict[focal[6]] += 1
+        else:
+            focalsDict[stypeOther] += 1
+    
+    # Remove the "other" stype from the dictionary if it's zero. It SHOULD
+    # always be zero, so it's only noteworthy when it's > 0.
+    
+    if focalsDict[stypeOther] == 0:
+        focalsDict.pop(stypeOther)
+    
+    return focalsDict
+
 def countLines(dataLines, sampleType=''):
     '''
     dataLines is a list of list of strings, presumed to be all the data from a
@@ -493,85 +600,45 @@ def countLinesPerDay(dataLines, sampleType=''):
     
     return '\n'.join(resultInfo)
 
-def countPointsPerFocal(dataLines):
+def countSummary(dataLines):
     '''
-    Counts the number of "point" lines recorded during each focal sample.
-    Returns a list of ([focal header list of strings], number of points)
-    tuples.
+    Reads the data in dataLines and counts the number of lines of each type that
+    occur in the data.
     
     dataLines is a list of list of strings, presumed to be all the data from a
-    file, stripped and split.  They are also presumed to be in chronological
-    order.
-    '''
-    from constants import focalAbbrev, pntAbbrev
+    file, stripped and split.  A code indicating the sample's "type" should be
+    at [0] in each line.
     
-    focalCounts = {}
-    lastFocal = 'NONE YET'
-    focalCounts[lastFocal] = 0
+    Returns a dictionary whose keys are all the line types that occur in the
+    data, and whose values are the number of times those lines occur.
+    '''
+    countDict = {}
     
     for line in dataLines:
-        if isType(line, focalAbbrev):
-            lastFocal = '\t'.join(line)
-            focalCounts[lastFocal] = 0
-        elif isType(line, pntAbbrev):
-            focalCounts[lastFocal] += 1
+        if line[0] in countDict.keys():
+            countDict[line[0]] += 1
+        else:
+            countDict[line[0]] = 1
     
-    # Counting done, now convert focals back to string lists. Keep them sorted!
-    outLines = []
-    
-    for (focal, count) in sorted(focalCounts.items()):
-        focalAsList =  focal.split('\t')
-        outLines.append([focalAsList, count])
-    
-    return outLines
+    return countDict
 
-def dataSummary(dataLines):
+def countUniqueDates(dataLines):
     '''
+    Reads the data in dataLines and counts the number of unique dates that occur
+    in the data.
+    
     dataLines is a list of list of strings, presumed to be all the data from a
-    file, stripped and split.  Each list of strings should have a 'yyyy-mm-dd'
-    date at [2], and a hh:mm:ss time at [3]. A code indicating the sample's
-    "type" should be at [0].
+    file, stripped and split.  The date should be in position [2] of each line.
     
-    Reads the data in dataLines and provides summary information about it.
-    Doesn't check for errors, only factual information:
-        -- First and Last day/time of data
-        -- Number of lines/events recorded of any type
-        -- Number of lines/events recorded of each type
-        -- # of focals/day
-
-    Returns a single string that will include several line breaks.
+    Returns an integer: the number of distinct dates that occur in the data.
     '''
-    from constants import focalAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, pntAbbrev
+    theDates = set()
     
-    summaryLines = []
+    for line in dataLines:
+        thisDate = line[2]
+        theDates.add(thisDate)
     
-    # Add summary header
-    commentLine = '------General summary of data:\n'
-    summaryLines.append(commentLine)
-    
-    # Add first and last day/time
-    firstTime, lastTime = firstAndLastLines(dataLines)
-    commentLine = 'Data begins ' + firstTime + ' and ends ' + lastTime
-    summaryLines.append(commentLine)
-    
-    # Count lines and line types
-    typesToCheck = ['', focalAbbrev, pntAbbrev, neighborAbbrev, adlibAbbrev, noteAbbrev]
-    for item in typesToCheck:
-        numLinesAsStr = str(countLines(dataLines, item))
-        displayItem = item[:]
-        if displayItem == '':
-            displayItem = 'all'
-        commentLine = 'Number of ' + displayItem + ' lines:\t\t' + numLinesAsStr
-        summaryLines.append(commentLine)
-    
-    # Add line break
-    summaryLines.append('\n')
-    
-    # Daily breakdown of focals collected
-    commentLine = countLinesPerDay(dataLines, focalAbbrev)
-    summaryLines.append(commentLine)
-    
-    return '\n'.join(summaryLines)
+    return len(theDates)
 
 def duringFocal (eventLine, focalEndTime):
     '''
@@ -585,159 +652,6 @@ def duringFocal (eventLine, focalEndTime):
     eventDayTime = ' '.join(eventLine[2:4])
     eventDateTime = datetime.strptime(eventDayTime, '%Y-%m-%d %H:%M:%S')
     return eventDateTime < focalEndTime
-
-def errorAlertSummary(dataLines):
-    '''
-    dataLines is a list of list of strings, presumed to be all the data from a
-    file, stripped and split.  Each list of strings should have a 'yyyy-mm-dd'
-    date at [2], and a hh:mm:ss time at [3]. A code indicating the sample's
-    "type" should be at [0].
-    
-    Reads the data in dataLines and lists cases of apparent errors in the data.
-    Also brings alerts to things that may not be "wrong" but may indicate
-    problems:
-        -- Same focal collected more than once/day
-        -- More than 1 group sampled in a single day
-        -- Focals with overlapping times
-        -- Focals with no data at all
-        -- Focals with no points
-        -- Focals with >10 points
-        -- Points w/ no neighbors (exclude out of sight points)
-        -- Neighbors w/o a preceding PNT
-        -- Points w/ >3 neighbors
-        -- Points from juvenile samples with non-unique neighbors
-        -- Neighbors w/o an N0/N1/N2 code
-        -- Notes on days w/o any focals
-        -- Actor == Actee
-        -- Actor or Actee is a non-sname placeholder (NULL, XXX, 998, etc.)
-        -- Neighbor is a non-sname placeholder ('IMM', 'INF')
-        -- Notes lines possibly containing mounts, ejaculations, or consorts
-        -- Non-note lines that recorded mounts, ejaculations, or consorts
-        -- Mounts/Ejaculations/Consorts not during a focal
-        -- Mounts/Ejaculations/Consorts not involving the focal individual
-        
-        Not implemented, but maybe worth adding:
-        -- JM's AS/OS/DSing AF's
-        -- Actor/actee in different groups
-    
-    Returns a single string that will include several line breaks.
-    '''
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, stypeJuv, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2
-    
-    alertLines = []
-
-    # Add summary header
-    commentLine = '------Alerts and Errors:\n'
-    alertLines.append(commentLine)
-    
-    # Check for individuals sampled >1x/day
-    alertData = ['\t'.join(line) for line in checkDuplicateFocals(dataLines)]
-    commentLine = writeAlert('duplicate (date, sname) pairs', alertData) + '\n'
-    alertLines.append(commentLine)
-
-    # Check for >1 group sampled in one day
-    alertData = ['\t'.join(line) for line in checkDuplicateGroups(dataLines)]
-    commentLine = writeAlert('>1 group sampled in a day', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for overlapping focals
-    alertData = []
-    allOverlaps = checkFocalOverlaps(dataLines)
-    for (focal1, focal2) in allOverlaps:
-        outFocal1 = ' '.join([focal1[2], focal1[3], focal1[5]]) # Date, time, ID
-        outFocal2 = ' '.join([focal2[2], focal2[3], focal2[5]])
-        alertData.append(', '.join([outFocal1, outFocal2]))
-    commentLine = writeAlert('overlapping focals', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for focal samples with no data
-    alertData = ['\t'.join(line) for line in theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev])]
-    commentLine = writeAlert('focal samples with no data', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for focal samples with no points
-    alertData = ['\t'.join(line) for line in theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev])]
-    commentLine = writeAlert('focal samples without points', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for focal samples with >10 points
-    alertData = [('\t'.join(focal) + '; ' + str(count) + ' points') for (focal, count) in countPointsPerFocal(dataLines) if count > 10]
-    commentLine = writeAlert('focal samples with > 10 points', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for in-sight points with no neighbors
-    alertData = theseWithoutThose(dataLines, pntAbbrev, [neighborAbbrev], beforeThem = [focalAbbrev])
-    alertData = ['\t'.join(line) for line in alertData if line[6] != outOfSightValue]
-    commentLine = writeAlert('in-sight points w/o neighbors', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for neighbors without a preceding point. This occurs in two
-    # different ways: Neighbor lines occur just after a focal starts and before
-    # any points, or a point is followed by >3 neighbors
-    
-    # First, neighbors after focals
-    alertData = theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev], [neighborAbbrev], [pntAbbrev])
-    alertData = ['\t'.join(line) for line in alertData]
-    commentLine = writeAlert(('header-then-neighbor, with no ' + pntAbbrev), alertData) +'\n'
-    alertLines.append(commentLine)
-    
-    # Second, points with >3 neighbors
-    alertData = [pair[0] for pair in checkNeighborsPerPoint(dataLines) if pair[1] > 3]
-    commentLine = writeAlert('points with >3 neighbors', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for non-unique neighbors in juvenile samples
-    alertData = ['\t'.join(line) for line in checkUniqueNeighbors(dataLines, [stypeJuv])]
-    commentLine = writeAlert('non-unique neighbors in juvenile samples', alertData) + '\n'
-    alertLines.append(commentLine)
-        
-    # Check for neighbors without appropriate neighbor codes
-    alertData = ['\t'.join(line) for line in dataLines if isType(line, neighborAbbrev) and line[-1] not in p8_nghcodes]
-    commentLine = writeAlert('neighbors w/o neighbor codes', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for notes on days without any focals
-    alertData = ['\t'.join(line) for line in checkNotesNoFocals(dataLines)]
-    commentLine = writeAlert('notes on days without any focals', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for data where actor is actee, or focal is neighbor
-    alertData = ['\t'.join(line) for line in checkActorIsActee(dataLines)]
-    commentLine = writeAlert('lines where actor is actee, or focal is neighbor', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for data where actor or actee is a non-sname placeholder
-    alertData = ['\t'.join(line) for line in checkActorActeeNotReal(dataLines)]
-    commentLine = writeAlert('lines where actor or actee is a non-sname placeholder', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for lines where neighbor is a non-sname placeholder (different placeholders from ad-libs)
-    alertData = ['\t'.join(line) for line in checkNeighborNotReal(dataLines)]
-    commentLine = writeAlert('lines where neighbor is a non-sname placeholder', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for notes that appear to contain mounts, ejaculations, or consorts
-    MEC_list = [bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2]
-    alertData = ['\t'.join(line) for line in checkBehavsInNotes(dataLines, MEC_list)]
-    commentLine = writeAlert('notes that appear to contain mounts, ejaculations, or consorts', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for lines with mounts, ejaculations, or consorts recorded as regular, legit behaviors
-    alertData = ['\t'.join(line) for line in checkSpecificBehavior(dataLines, MEC_list)]
-    commentLine = writeAlert('lines with mounts, ejaculations, or consorts recorded as regular, legit behaviors', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for lines with mounts, ejaculations, or consorts recorded outside of a focal sample
-    alertData = ['\t'.join(line) for line in checkMountsConsortsDuringFocal(dataLines)]
-    commentLine = writeAlert('lines with mounts, ejaculations, or consorts recorded outside of a focal sample', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    # Check for lines with mounts, ejaculations, or consorts not involving the focal individual
-    alertData = ['\t'.join(line) for line in checkMountsConsortsInvolvedFocal(dataLines)]
-    commentLine = writeAlert('lines with mounts, ejaculations, or consorts not involving the focal individual', alertData) + '\n'
-    alertLines.append(commentLine)
-    
-    return '\n'.join(alertLines)
 
 def findOverlaps(thisHdrLine, otherHdrs):
     '''
@@ -788,6 +702,31 @@ def getDateTime(eventLine, dateIndex, timeIndex):
     joinedTime = ' '.join([eventLine[dateIndex],eventLine[timeIndex]]) ##Result should be string 'yyyy-mm-dd hh:mm:ss'
     return datetime.strptime(joinedTime, '%Y-%m-%d %H:%M:%S')
 
+def getPointsPerFocal(dataLines):
+    '''
+    Gathers the "point" lines recorded during each focal sample. Returns a
+    dictionary whose keys are focal headers (each a single string), and whose
+    values are lists of associated points (each its own list of strings).
+    
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.  They are also presumed to be in chronological
+    order.
+    '''
+    from constants import focalAbbrev, pntAbbrev
+    
+    focalCounts = {}
+    lastFocal = 'NONE YET'
+    focalCounts[lastFocal] = []
+    
+    for line in dataLines:
+        if isType(line, focalAbbrev):
+            lastFocal = '\t'.join(line)
+            focalCounts[lastFocal] = []
+        elif isType(line, pntAbbrev):
+            focalCounts[lastFocal].append(line)
+    
+    return focalCounts
+
 def pointsOutOfSight(dataLines):
     '''
     dataLines is a list of list of strings, presumed to be all the data from a
@@ -805,6 +744,23 @@ def pointsOutOfSight(dataLines):
     oosLines =[line for line in dataLines if isType(line, pntAbbrev) and line[6] == outOfSightValue]
     
     return oosLines
+
+def sameActor(eventLine1, eventLine2):
+    '''
+    Checks if the actor/focal individual in both lines is the same.
+    
+    Parameters are lists of strings, presumed to be lines of data, split and
+    stripped.  Index [5] of both lists should be the "actor", or dominant/focal
+    individual in the observation.
+        For focal headers, and "point" and "neighbor" lines, this will be the
+        focal individual.  For interactions, this will be the "actor".
+    
+    Returns TRUE or FALSE.
+    '''
+    
+    indiv1 = eventLine1[5]
+    indiv2 = eventLine2[5]
+    return indiv1 == indiv2
 
 def sameDate(eventLine1, eventLine2):
     '''
@@ -936,39 +892,46 @@ def theseWithoutThose(dataLines, thisType, notThose, butYesThem = [], beforeThem
     
     return these
 
-def writeAlert(checkFor, alertData):
+def writeAlert(checkFor, alertData, showSpecifics = True, numForAlert = ''):
     '''
-    Writes a message indicating that a condition was checked, then recites cases
-    in the data that meet that condition. The condition is not actually checked
-    in this function; this is just for making human-friendly output.
+    Writes a message indicating that a condition was checked, then shows how
+    many times the condition occurred and (if desired) recites the lines in the
+    data where it occurred (the alertData). The condition is not actually
+    checked in this function; this is just for making human-friendly output.
     
-    Returns a single string that will contain one or more newlines.  It is of
-    the format:
-        'Check for (checkFor): [NONE/FOUND]
+    The boolean "showSpecifics" allows the option to choose whether or not the
+    data in alertData are included in the output.
+    
+    Often, the number of times an event occurred will simply be the length of
+    alertData.  In case that's not accurate, the number can instead be provided
+    in "numForAlert".
+    
+    Returns a single string that will likely contain one or more newlines.  It
+    is of the format:
+        '(checkFor):\t[number of cases]
         \talertData[0]
         ...
         \talertData[n]'
     
-    The first line will end with "NONE" if len(alertData) is 0, otherwise
-    "FOUND".
+    When showSpecifics is False, only the first line in the above example is
+    output.
     
     checkFor is a string indicating in human language what was checked.
     
     alertData is a list of strings, and may be empty. If non-empty, each string
     will be written as an example case of the condition described in checkFor.
     '''
-    resultFlag = 'NONE'
-    
-    if len(alertData) > 0:
-        resultFlag = 'FOUND'
+    if numForAlert == '':
+        numForAlert = len(alertData)
     
     resultInfo = []
-    commentLine = 'Check for ' + checkFor + ': ' + resultFlag
+    commentLine = checkFor + ':\t' + str(numForAlert)
     resultInfo.append(commentLine)
     
-    for item in alertData:
-        commentLine = '\t' + item
-        resultInfo.append(commentLine)
+    if showSpecifics:
+        for item in alertData:
+            commentLine = '\t' + item
+            resultInfo.append(commentLine)
     
     return '\n'.join(resultInfo)
     

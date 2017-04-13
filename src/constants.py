@@ -101,8 +101,11 @@ unnamedCodes = [immigrantCode, infantCode]
 # Codes representing focal sample "types" (adult females vs. juveniles)
 stypeAdultFem = 'FEM'
 stypeJuv = 'JUV'
+stypeOther = 'OTHER'
 
-# Dictionary to convert the stype "codes" (above) into the "stype" values used in Babase
+# Dictionary to convert the stype "codes" (above) into the "stype" values used
+# in Babase. The "other" type is not used in Babase and only occurs if something
+# went wrong, so it's not added here.
 stypesBabase = {}
 stypesBabase[stypeAdultFem] = 'F'
 stypesBabase[stypeJuv] = 'J'
