@@ -7,7 +7,7 @@ Unlikely that this will be used much, but I'm making it just in case.
 
 Code to read through a Psion data file and write its agonisms to a new file.
 
-The new file will record the agonisms in the same format exported by rawFileImportGUI.
+The new file will record the agonisms in the same format exported by dumpFileImportGUI.
 
 Because this isn't intended to be used much (at all?) beyond right now, it isn't
     carefully documented.
@@ -40,7 +40,7 @@ def getPsionDate(psionLine):
 
 def getPsionAgonisms(psionFilePath, writeToPath):
     '''
-    Given a Psion file path, write its agonisms to a file at writeToPath, in the format used by rawFileImportGUI
+    Given a Psion file path, write its agonisms to a file at writeToPath, in the format used by dumpFileImportGUI
     
     ADL    SNS    2015-09-07    07:00:11    VOG    VES    G    VEJ
     '''

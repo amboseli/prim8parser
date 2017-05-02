@@ -31,7 +31,7 @@ def removeExtraNewLines(filePath):
     openedFile.close()
     return fullText.splitlines()
 
-def cleanRawData(filePath):
+def cleanDumpData(filePath):
     '''
     Given a file path:
         1) opens the file,
@@ -52,7 +52,7 @@ def makeAllDicts(filePath):
     The names of each of the "inner" dictionaries is given by the local list, "p8TableList".
     Returns the dictionary of dictionaries.
     '''
-    allLines = cleanRawData(filePath) # Opens and closes file
+    allLines = cleanDumpData(filePath) # Opens and closes file
     
     fullDict = {} ##The big, bad dictionary of dictionaries returned by this function
     

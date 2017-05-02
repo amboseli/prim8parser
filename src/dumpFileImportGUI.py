@@ -9,10 +9,10 @@ GUI to use for processing of data exported from Prim8
 from Tkinter import *
 from tkFileDialog import askopenfilename, asksaveasfilename
 from constants import prim8Name, prim8Version, prim8Setup
-from cleanRawFile import makeAllDicts, writeAll
+from readDumpFile import makeAllDicts, writeAll
 from os import path
 
-class rawFileImportGUI(Frame):
+class dumpFileImportGUI(Frame):
     '''
     Builds the GUI used for processing raw Prim8 data into files readable by humans 
     '''
@@ -203,5 +203,5 @@ class rawFileImportGUI(Frame):
             
 if __name__=='__main__':
     myRoot = Tk()
-    rawFileImportGUI(myRoot)
+    dumpFileImportGUI(myRoot)
     myRoot.mainloop()
