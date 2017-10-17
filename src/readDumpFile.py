@@ -94,7 +94,9 @@ def addInstancesModifiersDict(masterDict):
     ##TODO: Don't bother making a new dictionary, and just make a function that fetches data from the modifiers table as it is?
     from constants import dictInstMods, p8modifiers
     modifierIDs = sorted(masterDict[p8modifiers].keys()) ##Get list of all the modifiers_id's
-    modifierIDs.pop()  ##Remove the key for the modifiers table "legend"
+    ##Remove the key for the modifiers table "legend"
+    if len(modifierIDs) > 0: ##Make sure there is any such data
+        modifierIDs.pop()
     masterDict[dictInstMods] = {}
     for mod_id in modifierIDs:
         instance_id = masterDict[p8modifiers][mod_id][0]
