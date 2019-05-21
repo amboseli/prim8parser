@@ -59,6 +59,7 @@ def gatherAgonisms(fileSoFarPath, newDataFilePath, minDate, maxDate):
     outFile = open(fileSoFarPath, 'w')
     outFile.write('Agonisms recorded between ' + minDate + ' and ' + maxDate + '\n')
     outFile.writelines(uniqueList)
+    outFile.close()
     print "Finished compiling agonisms from ", newDataFilePath
 
 
