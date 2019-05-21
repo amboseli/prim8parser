@@ -18,7 +18,7 @@ class errorCheckingGUI(Frame):
     '''
     Create the GUI used for checking processed Prim8 data for issues
     '''
-
+    
     def __init__(self, root):
         '''
         Build the GUI.
@@ -66,7 +66,7 @@ class errorCheckingGUI(Frame):
         b3.grid(row=3, column=2, sticky='W', pady=4)
         b4.grid(row=5, column=0, sticky='W',pady=4)
         b5.grid(row=5, column=1, sticky='W',pady=4)
-        
+    
     def getOpenFileName(self, textVariable):
         '''
         Opens a dialog to ask for a file name to open.  Sets textVariable to
@@ -93,14 +93,14 @@ class errorCheckingGUI(Frame):
         
         print "Suggesting SQL file path:", sqlPath
         textVariable3.set(sqlPath)
-        
+    
     def endProgram(self, root):
         '''
         Ends the program.
         '''
         print "Closing program!"
         root.quit()
-        
+    
     def integrityCheck(self, input1, input2, input3):
         '''
         Input values are presumed to be the 3 values given by the user in the GUI.  They are assumed to be strings, not StrVars.
@@ -122,7 +122,7 @@ class errorCheckingGUI(Frame):
         # Make sure inputs are unique
         setParams = set(allParams)
         return len(setParams) == len(allParams)
-
+    
     def checkAndWriteSQL(self, input1, input2, input3):
         '''
         The inputs should be the 3 StrVar values added by the user in the GUI.
@@ -152,7 +152,6 @@ class errorCheckingGUI(Frame):
             input2.set("") #Clear out file name
             input3.set("") #Clear out file name
 
-        
 if __name__=='__main__':
     myRoot = Tk()
     errorCheckingGUI(myRoot)

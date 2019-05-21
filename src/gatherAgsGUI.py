@@ -12,7 +12,6 @@ class gatherAgsGUI(Frame):
     '''
     Create the GUI that will be used by the "gatherAgonisms" program to compile all the agonisms for a period of time (presumably a month).
     '''
-
     def __init__(self, root):
         '''
         Build the GUI.
@@ -59,7 +58,7 @@ class gatherAgsGUI(Frame):
         b2.grid(row=1, column=2, sticky='W', pady=4)
         b3.grid(row=4, sticky='W',pady=4)
         b4.grid(row=4, column=1, sticky='W',pady=4)
-        
+    
     def getOpenFileName(self, textVariable):
         '''
         Opens a dialog to ask for a file name to open.  Sets textVariable to hold the file's path (a string).
@@ -67,13 +66,13 @@ class gatherAgsGUI(Frame):
         filePath = askopenfilename(filetypes=(('Tab-delimited','*.txt'),('All files','*.*')), title='File of agonisms so far:')
         print "Got file path:", filePath
         textVariable.set(filePath)
-        
+    
     def endProgram(self, root):
         '''
         Ends the program.
         '''
         root.quit()
-        
+    
     def integrityCheck(self, input1, input2, input3, input4):
         '''
         Input values are presumed to be the 4 values given by the user in the GUI.  They are assumed to be strings, not StrVars.
@@ -100,7 +99,7 @@ class gatherAgsGUI(Frame):
         
         # Make sure the date in tv4 is greater than tv3
         return input4 > input3
-
+    
     def compileAgonisms(self, input1, input2, input3, input4):
         '''
         The 4 inputs should be the 4 StrVar values added by the user in the GUI.
@@ -118,12 +117,7 @@ class gatherAgsGUI(Frame):
         else:
             gatherAgonisms(value1, value2, value3, value4)
             #This function prints success/error messages to console, so no need to add one here
-        
-        
 
-
-
-            
 if __name__=='__main__':
     myRoot = Tk()
     gatherAgsGUI(myRoot)

@@ -16,7 +16,7 @@ class dumpFileImportGUI(Frame):
     '''
     Builds the GUI used for processing raw Prim8 data into files readable by humans 
     '''
-
+    
     def __init__(self, root):
         '''
         Start the GUI.
@@ -38,7 +38,7 @@ class dumpFileImportGUI(Frame):
         l4.grid(row=3)
         l5.grid(row=4)
         l6.grid(row=5)
-
+        
         # Define text variables (tv) and their associated entry (e) fields
         tv1 = StringVar()
         tv2 = StringVar()
@@ -46,7 +46,7 @@ class dumpFileImportGUI(Frame):
         tv4 = StringVar()
         tv5 = StringVar()
         tv6 = StringVar()
-
+        
         tv3.set(prim8Name)
         tv4.set(prim8Version)
         tv5.set(prim8Setup)        
@@ -77,7 +77,7 @@ class dumpFileImportGUI(Frame):
         b2.grid(row=1, column=2, sticky='W', pady=4)
         b3.grid(row=6, column=0,sticky='W', pady=4)
         b4.grid(row=6, column=1, sticky='W',pady=4)
-        
+    
     def getOpenFileName(self, textVariable):
         '''
         Opens a dialog to ask for a file name to open.  Sets textVariable to hold the file's path (a string).
@@ -113,7 +113,7 @@ class dumpFileImportGUI(Frame):
         print "Save path predicted to be", saveFilePath
         
         saveFileTV.set(saveFilePath)
-
+    
     def guessTabletID(self, filePath, textVariable):
         '''
         filePath is a string and a file path, presumably for the file that is written-to in this GUI.
@@ -123,7 +123,7 @@ class dumpFileImportGUI(Frame):
         tabletID = filePath[-6:-4]
         print "Tablet ID predicted to be", tabletID 
         textVariable.set(tabletID)
-
+    
     def getOpenFileAndMakeGuesses(self, openFileTV, saveFileTV, tabletTV):
         '''
         Opens dialog asking for a file name to open, and uses that info to guess
@@ -149,14 +149,14 @@ class dumpFileImportGUI(Frame):
         print "Got output file path:", filePath
         textVariableSaveFile.set(filePath)
         self.guessTabletID(filePath, textVariableTabletID)
-        
+    
     def endProgram(self, root):
         '''
         Ends the program.
         '''
         print "Closing program!"
         root.quit()
-        
+    
     def integrityCheck(self, input1, input2, input3, input4, input5, input6):
         '''
         Input values should be the values given by the user in the GUI.  They are assumed to be strings, not StrVars.
@@ -176,7 +176,7 @@ class dumpFileImportGUI(Frame):
                 print "Missing value(s)!"
                 return False
         return True
-
+    
     def compileData(self, input1, input2, input3, input4, input5, input6):
         '''
         The inputs should be the StrVar values added by the user in the GUI.
@@ -200,7 +200,8 @@ class dumpFileImportGUI(Frame):
             input1.set("")
             input2.set("")
             input6.set("")
-            
+    
+
 if __name__=='__main__':
     myRoot = Tk()
     dumpFileImportGUI(myRoot)
