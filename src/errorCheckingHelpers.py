@@ -33,6 +33,10 @@ def checkActorActeeNotReal(dataLines):
     Checks ad-lib lines in dataLines for cases where either the actor or actee
     is noted as "NULL" or some other placeholder-type value.
     
+    All legitimate names used as actor or actee should be exactly 3 characters,
+    so any names that aren't will be flagged here, whether or not they were
+    specifically listed as possible "placeholder" values beforehand.
+    
     This function is different from checkNeighborNotReal in that it uses a
     different (larger) set of "placeholder" values.  Some of these values are
     okay for use as neighbors.  See Babase documentation.
@@ -49,7 +53,7 @@ def checkActorActeeNotReal(dataLines):
     
     linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev)]
     
-    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs]
+    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs or len(line[5]) <> 3 or len(line[7]) <> 3]
 
 def checkActorIsActee(dataLines):
     '''
@@ -287,6 +291,10 @@ def checkNeighborNotReal(dataLines):
     Checks neighbor lines in dataLines for cases where the neighbor is noted as
     "INF" (a not-yet-named infant) or some other placeholder-type value.
     
+    All legitimate names used as a neighbor should be exactly 3 characters, so
+    any names that aren't will be flagged here, whether or not they were
+    specifically listed as possible "placeholder" values beforehand.
+    
     This function is different from checkActorActeeNotReal in that it uses a
     different (smaller) set of "placeholder" values.  Some of values used as
     neighbors are not allowed for use in ad-libs.  See Babase documentation.
@@ -303,7 +311,7 @@ def checkNeighborNotReal(dataLines):
     
     linesOfInterest = [line for line in dataLines if isType(line, neighborAbbrev)]
     
-    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs]
+    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs or len(line[5]) <> 3 or len(line[7]) <> 3]
 
 def checkNeighborsPerPoint(dataLines):
     '''
