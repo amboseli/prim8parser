@@ -16,3 +16,5 @@
 1.120	snap's	SNA	snap
 9.000	unknown	UNK	unknown
 1.222	vogue's	VOG	vogue
+1.2221	yoda's	YOD	yoda
+1.2222	europa's	EUR	europa
