@@ -87,6 +87,7 @@ neighborsJuv[p8_nghcodes[2]] = '3'
 
 # "Unknown" snames used in Prim8, and their Babase counterparts
 unknSnames = {}
+unknSnames['996'] = '996'
 unknSnames['997'] = '997'
 unknSnames['998'] = '998'
 unknSnames['NULL'] = 'NULL'
