@@ -45,7 +45,7 @@ def groupedData(dataLines, idxOfInterest):
     return myDict
 
 if __name__ == '__main__':
-    myFilePath = "/Users/jg177/Dropbox (Duke Bio_Ea)/Alberts Lab/ABRP_Data Management/DATA/REPRESENTATIVE INTERACTIONS/Final Data/AGONISM/2017/Samsung Agonisms/2017-04 Samsung Agonisms.txt"
+    myFilePath = "/Users/jg177/Dropbox (Duke Bio_Ea)/Alberts Lab/ABRP_Data Management/DATA/REPRESENTATIVE INTERACTIONS/Final Data/AGONISM/2018/Samsung Agonisms/2018-09 Samsung Agonisms.txt"
     observerIdx = 1
     dateIdx = 2
     
@@ -54,6 +54,8 @@ if __name__ == '__main__':
     myData = myFile.readlines()
     myFile.close()
     myData = [line.strip().split('\t') for line in myData]
+    #Remove interactions with "NULL" actor or actee
+    myData = [line for line in myData if line[5] <> 'NULL' and line[7] <> 'NULL']
     
     obsDict = groupedData(myData, observerIdx)
     for (obs, obsLines) in obsDict.iteritems():
