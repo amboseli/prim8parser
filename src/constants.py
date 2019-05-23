@@ -133,3 +133,7 @@ bb_mount_long = 'mount'
 bb_ejaculation_long = 'ejaculate' #Pretty sure no one bothers to spell this out
 bb_consort_long = 'consort'
 bb_consort_long2 = 'consorting'
+
+# File header for gathered data from files w/ different headers.
+# e.g. different tablets, different Prim8 version, etc.
+multiFileHeader = 'Data combined from files with different headers\n'
