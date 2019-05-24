@@ -430,7 +430,7 @@ def checkTooManyPoints(dataLines):
         if len(points) > 10:
             tooManyPoints.append((focal, len(points)))
     
-    return tooManyPoints    
+    return tooManyPoints
 
 def checkUniqueNeighbors(dataLines, sampleProtocols):
     '''
