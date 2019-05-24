@@ -41,7 +41,7 @@ def getDataFromFile(filePath, minDate, maxDate):
 	written to a new file.
     '''
     outLines = []
-    openedFile = open(filePath,'r')
+    openedFile = open(filePath,'rU')
     # Add the file's header to the outward list
     outLines.append(openedFile.readline())
     fileLines = openedFile.readlines()
