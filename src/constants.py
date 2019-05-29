@@ -114,6 +114,10 @@ stypesBabase[stypeJuv] = 'J'
 # Focal activity that indicates feeding
 focalFeeding = 'F'
 
+# Maximum number of points in a focal sample.  If more than this,
+# then problem.
+maxPointsPerFocal = 10
+
 # Prefixes for text to be recorded in the ALLMISCS table
 #   This is clunky, an artifact of how these data used to be recorded.  See
 #   Babase documentation of the ALLMISCS table for more info.

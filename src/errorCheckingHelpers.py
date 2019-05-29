@@ -420,15 +420,14 @@ def checkTooManyPoints(dataLines):
     
     Returns a list of (Focal header as string, integer number of points) tuples.
     '''
+    from constants import maxPointsPerFocal
     tooManyPoints = []
     
-    nonMatchingPoints = checkPointMatchesFocal(dataLines)
-    theData = [line for line in dataLines if line not in nonMatchingPoints]
-    focalsDict = getPointsPerFocal(theData)
+    focalAndPoints = countPointsPerFocal(dataLines)
     
-    for (focal, points) in sorted(focalsDict.items()):
-        if len(points) > 10:
-            tooManyPoints.append((focal, len(points)))
+    for (focal, points) in focalAndPoints:
+        if points > maxPointsPerFocal:
+            tooManyPoints.append((focal, points))
     
     return tooManyPoints
 
@@ -607,6 +606,28 @@ def countLinesPerDay(dataLines, sampleType=''):
         resultInfo.append(commentLine)
     
     return '\n'.join(resultInfo)
+
+def countPointsPerFocal(dataLines):
+    '''
+    For each focal header in dataLines, counts the number of points
+    that were recorded.  Does not count points that don't match the
+    focal.
+    
+    Returns a list of (Focal header as string, integer number of
+    points) tuples.
+    '''
+    outData = []
+    
+    # Remove points that somehow appear during a focal duration but
+    # are not part of the same focal sample
+    nonMatchingPoints = checkPointMatchesFocal(dataLines)
+    theData = [line for line in dataLines if line not in nonMatchingPoints]
+    focalsDict = getPointsPerFocal(theData)
+    
+    for (focal, points) in sorted(focalsDict.items()):
+        outData.append((focal, len(points)))
+    
+    return outData
 
 def countSummary(dataLines):
     '''
