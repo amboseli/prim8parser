@@ -607,21 +607,33 @@ def countLinesPerDay(dataLines, sampleType=''):
     
     return '\n'.join(resultInfo)
 
-def countPointsPerFocal(dataLines):
+def countPointsPerFocal(dataLines, incOutOfSights = True):
     '''
     For each focal header in dataLines, counts the number of points
     that were recorded.  Does not count points that don't match the
     focal.
     
+    The optional incOutOfSights value indicates whether out-of-sight
+    points should be included in the count.  Default (True) is yes,
+    they should be included.
+    
     Returns a list of (Focal header as string, integer number of
     points) tuples.
     '''
+    from constants import outOfSightValue
+    
     outData = []
     
     # Remove points that somehow appear during a focal duration but
     # are not part of the same focal sample
     nonMatchingPoints = checkPointMatchesFocal(dataLines)
     theData = [line for line in dataLines if line not in nonMatchingPoints]
+    
+    # Remove out of sight points from counts, if requested
+    if not incOutOfSights:
+        oosPoints = pointsOutOfSight(dataLines)
+        theData = [line for line in theData if line not in oosPoints]
+    
     focalsDict = getPointsPerFocal(theData)
     
     for (focal, points) in sorted(focalsDict.items()):
