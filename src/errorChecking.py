@@ -3,6 +3,7 @@ Created on 28 Oct 2015
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
+from compareFocalLogs import *
 from errorCheckingHelpers import *
 from constants import textBoundary
 from os import path
@@ -67,7 +68,7 @@ def dataSummary(dataLines, doDailyFocals = True):
     
     return '\n'.join(summaryLines)
 
-def errorAlertSummary(dataLines, showSpecifics = True):
+def errorAlertSummary(dataLines, focalLogPath = "", showSpecifics = True):
     '''
     Reads the data in dataLines and lists cases of apparent errors in the data.
     Also brings alerts to things that may not be "wrong" but may indicate
@@ -89,6 +90,8 @@ def errorAlertSummary(dataLines, showSpecifics = True):
         -- Actor == Actee
         -- Actor or Actee is a non-sname placeholder (NULL, XXX, 998, etc.)
         -- Neighbor is a non-sname placeholder ('IMM', 'INF')
+        -- Focal samples that were not logged (if focalLogPath provided)
+        -- Logged (as completed) samples that were not done (if focalLogPath provided)
         -- Notes lines possibly containing mounts, ejaculations, or consorts
         -- Non-note lines that recorded mounts, ejaculations, or consorts
         -- Mounts/Ejaculations/Consorts not during a focal
@@ -218,6 +221,21 @@ def errorAlertSummary(dataLines, showSpecifics = True):
     commentLine = writeAlert('Neighbor is a non-sname placeholder', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
+    # Check for focals done that aren't in the log (if provided)
+    if focalLogPath <> "":
+        # Then a log was provided. Do this check.
+        alertData = getFocalsNotLogged(dataLines, focalLogPath)
+        alertData = [line[0]+"\t"+line[2]+" point(s) in sight, out of "+line[1] for line in alertData]
+        commentLine = writeAlert("Focal samples that aren't in the log", alertData, showSpecifics) + '\n'
+        alertLines.append(commentLine)
+    
+    # Check for logged (as complete) focals that aren't in the data
+    if focalLogPath <> "":
+        # Then a log was provided. Do this check.
+        alertData = getLoggedNotDone(dataLines, focalLogPath)
+        commentLine = writeAlert("Logged samples that aren't in the data", alertData, showSpecifics) + '\n'
+        alertLines.append(commentLine)
+    
     # Check for notes that appear to contain mounts, ejaculations, or consorts
     MEC_list = [bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2]
     alertData = ['\t'.join(line) for line in checkBehavsInNotes(dataLines, MEC_list)]
@@ -241,7 +259,7 @@ def errorAlertSummary(dataLines, showSpecifics = True):
     
     return '\n'.join(alertLines)
 
-def errorCheck (inFilePath, outFilePath):
+def errorCheck (inFilePath, outFilePath, focalLogPath = ""):
     '''
     Checks the data in the file at inFilePath for possible errors.
     Also does some counting of basic statistics about the data, e.g. (how many focals, how many adlibs, etc.)
@@ -249,6 +267,7 @@ def errorCheck (inFilePath, outFilePath):
         If outFilePath already existed, everything already there will be
         retained. New data will be added to the top, followed by what was
         already there.
+    focalLogPath is the (optional) path to a focal sample log, which will allow a few additional kinds of checks to occur.
     Prints a message that the process is complete.
     Returns nothing.
     '''
@@ -256,18 +275,18 @@ def errorCheck (inFilePath, outFilePath):
     prevData = [] # To hold previous data, if any
     if path.isfile(outFilePath):
         print "Getting previous data from:", path.basename(outFilePath) 
-        outFile = open(outFilePath,'ru')
+        outFile = open(outFilePath,'rU')
         prevData = outFile.readlines()
         outFile.close()
     
     print "Creating export file:", path.basename(outFilePath) 
-    outFile = open(outFilePath,'wu')
+    outFile = open(outFilePath,'w')
     
     outMsg = writeHeader(inFilePath) 
     outFile.write(outMsg + '\n\n')
     
     print "Opening import file:", path.basename(inFilePath)
-    impFile = open(inFilePath, 'r')
+    impFile = open(inFilePath, 'rU')
     impEvents = impFile.readlines()
     impFile.close()
        
@@ -280,7 +299,7 @@ def errorCheck (inFilePath, outFilePath):
     outFile.write(outMsg + '\n\n')
     
     print "Getting errors and alerts summary"
-    outMsg = errorAlertSummary(allEvents, showSpecifics=True)
+    outMsg = errorAlertSummary(allEvents, focalLogPath, showSpecifics=True)
     outFile.write(outMsg + '\n')
 
     if len(prevData) > 0:
