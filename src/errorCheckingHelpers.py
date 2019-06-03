@@ -443,6 +443,10 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
     When considering uniqueness of neighbors, placeholder names (any names in
     constants.unknSnames) are ignored.
     
+    If a point has more than three neighbors, the neighbors are likely
+    not unique, but neighbor uniqueness really isn't _the_ problem.
+    Those cases are not returned by this function.
+    
     dataLines is a list of lists of strings, presumed to be all the data from a
     file, stripped and split. sampleProtocols is a list of strings.
     '''
@@ -496,6 +500,11 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
     nonUniqueNeighbors = []
     
     for (point, neighbors) in myPnts.iteritems():
+        if len(neighbors) > 3:
+            # Then you've got too many neighbors.  Don't bother
+            # with checking for neighbor uniqueness, this point has
+            # bigger issues.
+            continue
         nghNames = []
         for neighbor in neighbors: #Collect all the neighbor names into one list
             if neighbor[7] not in fakeNames:
