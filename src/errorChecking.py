@@ -24,7 +24,6 @@ def dataSummary(dataLines, doDailyFocals = True):
 
     Returns a single string that will include several line breaks.
     '''
-    from constants import focalAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, pntAbbrev
     
     summaryLines = []
     
@@ -111,9 +110,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", showSpecifics = True):
     "type" should be at [0].
     
     Returns a single string that will include several line breaks.
-    '''
-    from constants import focalAbbrev, pntAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, outOfSightValue, stypeJuv, p8_nghcodes, bb_mount, bb_ejaculation, bb_consort, bb_mount_long, bb_ejaculation_long, bb_consort_long, bb_consort_long2
-    
+    '''    
     alertLines = []
 
     # Add summary header
