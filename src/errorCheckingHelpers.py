@@ -499,7 +499,7 @@ def checkUniqueNeighbors(dataLines, sampleProtocols):
     # Make list to hold the point and neighbor lines with nonunique neighbors
     nonUniqueNeighbors = []
     
-    for (point, neighbors) in myPnts.iteritems():
+    for (point, neighbors) in sorted(myPnts.items()):
         if len(neighbors) > 3:
             # Then you've got too many neighbors.  Don't bother
             # with checking for neighbor uniqueness, this point has
