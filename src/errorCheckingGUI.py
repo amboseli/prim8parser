@@ -41,11 +41,18 @@ class errorCheckingGUI(Frame):
         l4.grid(row=4)
         l4a.grid(row=5, column = 1)
         
-        # Define text variables (tv) and their associated entry (e) fields
+        # Define text variables (tv) and boolean variables (bv), and
+        # their associated entry (e) fields if applicable
         tv1 = StringVar()
+        bv1_5 = BooleanVar()
         tv2 = StringVar()
+        bv2_5 = BooleanVar()
         tv3 = StringVar()
         tv4 = StringVar()
+        bv5_5 = BooleanVar()
+        
+        # Set defaults, for those that have them
+        bv1_5.set(True)
         
         e1 = Entry(root, textvariable=tv1) 
         e2 = Entry(root, textvariable=tv2)
@@ -60,19 +67,26 @@ class errorCheckingGUI(Frame):
         
         # Define buttons
         b1 = Button(root, text='Choose', command = lambda: self.getOpenFileAndAutofill(tv1, tv3, tv4))
+        b1_5 = Checkbutton(root, text ='Only check log within Prim8 data date range', var = bv1_5, onvalue = True, offvalue = False)
         b2 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv2))
+        b2_5 = Checkbutton(root, text ="Don't blank this out after successful 'Go!'", var = bv2_5, onvalue = True, offvalue = False)
         b3 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv3))
         b4 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv4))
-        b5 = Button(root, text='Go!', command = lambda: self.checkAndWriteSQL(tv1, tv2, tv3, tv4))
+        b5 = Button(root, text='Go!', command = lambda: self.checkAndWriteSQL(tv1, bv1_5, tv2, bv2_5, tv3, tv4, bv5_5))
+        b5_5 = Checkbutton(root, text ="Don't blank anything after successful 'Go!'", var = bv5_5, onvalue = True, offvalue = False)
         b6 = Button(root, text='Quit', command = lambda: self.endProgram(root))
         
         # Place (grid) buttons
         b1.grid(row=0, column=2, sticky='W', pady=4)
+        b1_5.grid(row=0, column=3, sticky='W', pady=4)
         b2.grid(row=1, column=2, sticky='W', pady=4)
+        b2_5.grid(row=1, column=3, sticky='W', pady=4)
         b3.grid(row=2, column=2, sticky='W', pady=4)
         b4.grid(row=4, column=2, sticky='W',pady=4)
         b5.grid(row=6, column=0, sticky='W',pady=4)
-        b6.grid(row=6, column=1, sticky='W',pady=4)
+        b5_5.grid(row=6, column=3, sticky='W', pady=4)
+        b6.grid(row=6, column=2, sticky='W',pady=4)
+        
     
     def getOpenFileName(self, textVariable):
         '''
@@ -91,15 +105,17 @@ class errorCheckingGUI(Frame):
         self.getOpenFileName(textVariable1)
         
         sourcePath = str(textVariable1.get())
-        summaryPath = sourcePath[:-4] + '_summary.txt' # So "./filename.txt" suggests "./filename_summary.txt"
         
-        print "Suggesting summary file path:", summaryPath
-        textVariable2.set(summaryPath)
-        
-        sqlPath = sourcePath[:-4] + '_SQLout.sql' # So "./filename.txt" suggests "./filename_SQLout.sql"
-        
-        print "Suggesting SQL file path:", sqlPath
-        textVariable3.set(sqlPath)
+        if len(sourcePath) > 0: # Only do the below if a file was selected
+            summaryPath = sourcePath[:-4] + '_summary.txt' # So "./filename.txt" suggests "./filename_summary.txt"
+            
+            print "Suggesting summary file path:", summaryPath
+            textVariable2.set(summaryPath)
+            
+            sqlPath = sourcePath[:-4] + '_SQLout.sql' # So "./filename.txt" suggests "./filename_SQLout.sql"
+            
+            print "Suggesting SQL file path:", sqlPath
+            textVariable3.set(sqlPath)
     
     def endProgram(self, root):
         '''
@@ -108,12 +124,13 @@ class errorCheckingGUI(Frame):
         print "Closing program!"
         root.quit()
     
-    def integrityCheck(self, inputFile, focalLogFile, errorCheckedFile, outSQLFile):
+    def integrityCheck(self, inputFile, focalLogFile, limitLogDates, errorCheckedFile, outSQLFile):
         '''
         Input values are presumed to be the values given by the user in
-        the GUI.  They are assumed to be strings, not StrVars.
+        the GUI.  They should be actual strings/booleans/whatever, not
+        StrVars/BooleanVars/WhateverVars.
         
-        Make sure all needed values have been entered and are not
+        Makes sure all needed values have been entered and are not
         reused.
         
         Because file paths are chosen from a dialog, we don't do much
@@ -121,15 +138,21 @@ class errorCheckingGUI(Frame):
         
         Returns True if okay, False if not.
         '''
-        allParams = [inputFile, errorCheckedFile, outSQLFile]
+        allParams = [inputFile, limitLogDates, errorCheckedFile, outSQLFile]
         # Omit focalLogFile for now, because it doesn't actually need
         # to be provided
         
         # Make sure something was entered
         for item in allParams:
-            if len(item) == 0:
+            strItem = str(item)
+            if len(strItem) == 0:
                 print "Missing value(s)!"
                 return False
+        
+        # If limitLogDates is True, make sure we do have a log file
+        if limitLogDates and len(focalLogFile) == 0:
+            print "Limiting Log Dates, but no log file provided!"
+            return False
         
         # Now add focalLogFile in
         allParams.append(focalLogFile)
@@ -138,10 +161,9 @@ class errorCheckingGUI(Frame):
         setParams = set(allParams)
         return len(setParams) == len(allParams)
     
-    def checkAndWriteSQL(self, inputFile, focalLogFile, errorCheckedFile, outSQLFile):
+    def checkAndWriteSQL(self, inputFile, limitLogDates, focalLogFile, dontBlankLog, errorCheckedFile, outSQLFile, dontBlankAnything):
         '''
-        The inputs should be the StrVar values added by the user in the
-        GUI.
+        The inputs should be the values added by the user in the GUI.
         
         After checking the integrity of the inputs, runs the
         errorChecking module, then the SQL-writing module.
@@ -149,13 +171,19 @@ class errorCheckingGUI(Frame):
         #Convert the StrVars to strings
         inFile = str(inputFile.get())
         logFile = str(focalLogFile.get())
+        limitDates = limitLogDates.get()
         errorFile = str(errorCheckedFile.get())
         sqlFile = str(outSQLFile.get())
         
-        if not self.integrityCheck(inFile, logFile, errorFile, sqlFile):
+        noBlankLog = dontBlankLog.get()
+        noBlankAnything = dontBlankAnything.get()
+        
+        if not self.integrityCheck(inFile, logFile, limitDates, errorFile, sqlFile):
+            # The dontBlank___ things aren't included because there's
+            # nothing to check related to them
             print "Problem with data! No work done."
         else:
-            errorCheck(inFile, errorFile, logFile)
+            errorCheck(inFile, errorFile, logFile, limitDates)
             sourceFileName = path.basename(inFile)
             outFileName = path.basename(errorFile)
             print "Finished writing summary of", sourceFileName, "to", outFileName
@@ -165,10 +193,13 @@ class errorCheckingGUI(Frame):
             outFileName = path.basename(sqlFile)
             print "Finished writing SQL from", sourceFileName, "to", outFileName
             
-            inputFile.set("") #Clear out file name
-            focalLogFile.set("") #Clear out file name
-            errorCheckedFile.set("") #Clear out file name
-            outSQLFile.set("") #Clear out file name
+            if not noBlankAnything:
+                inputFile.set("") #Clear out file name
+                errorCheckedFile.set("") #Clear out file name
+                outSQLFile.set("") #Clear out file name
+                if not noBlankLog:
+                    focalLogFile.set("") #Clear out file name
+            
 
 if __name__=='__main__':
     myRoot = Tk()

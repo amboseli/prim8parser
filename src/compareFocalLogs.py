@@ -145,7 +145,7 @@ def importLogFile(logFilePath):
     The date in this file is a different format from what's usually
     used in these prim8 files.  It is the usual format used by the
     baboon project's data entry in the US: dd/mm/yyyy.  To standardize
-    for comparison, this date is converted to yyyy/mm/dd "behind the
+    for comparison, this date is converted to yyyy-mm-dd "behind the
     scenes" in this function, but the data in the file are never
     replaced with the new format.
     
@@ -254,7 +254,7 @@ def getFocalsNotLogged(dataLines, logFilePath):
     return notLogged
 
 
-def getLoggedNotDone(dataLines, logFilePath):
+def getLoggedNotDone(dataLines, logFilePath, limitLogDates = False):
     '''
     For each logged sample, checks to see if a real sample actually
     happened.
@@ -271,6 +271,9 @@ def getLoggedNotDone(dataLines, logFilePath):
     there at all. Because of this, this function ignores samples that
     were logged incomplete.
     
+    The boolean "limitLogDates" indicates if the dates from the log
+    should be limited to the date range within the data in dataLines.
+    
     Admittedly, the way this function works is VERY similar to the
     previous function.  Arguably, a more universal function could be
     written and just invoked twice.
@@ -280,6 +283,23 @@ def getLoggedNotDone(dataLines, logFilePath):
     
     # Remove logged focals that aren't complete
     logFocals = [line for line in logFocals if line[5] =='Y']
+    
+    # If limiting log dates, exclude those that are outside the
+    # desired range.
+    if limitLogDates:
+        # Get the first and last dates from the prim8 data
+        firstDate, lastDate = firstAndLastLines(dataLines)
+        # These items are date-time strings (yyyy-mm-dd hh:mm:ss), so
+        # drop the times before conversion to date objects
+        firstDate = yyyymmddToDate(firstDate[:10])
+        lastDate = yyyymmddToDate(lastDate[:10])
+        
+        newLogFocals = []
+        for line in logFocals:
+            thisDate = yyyymmddToDate(line[1])
+            if thisDate >= firstDate and thisDate <= lastDate:
+                newLogFocals.append(line)
+        logFocals = newLogFocals[:]
     
     # Convert realFocals to a list of strings, useful for comparison
     realFocals = ['\t'.join(line[1:5]) for line in realFocals]

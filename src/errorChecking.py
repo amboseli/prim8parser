@@ -67,7 +67,7 @@ def dataSummary(dataLines, doDailyFocals = True):
     
     return '\n'.join(summaryLines)
 
-def errorAlertSummary(dataLines, focalLogPath = "", showSpecifics = True):
+def errorAlertSummary(dataLines, focalLogPath = "", limitLogDates = False, showSpecifics = True):
     '''
     Reads the data in dataLines and lists cases of apparent errors in the data.
     Also brings alerts to things that may not be "wrong" but may indicate
@@ -100,17 +100,25 @@ def errorAlertSummary(dataLines, focalLogPath = "", showSpecifics = True):
         -- JM's AS/OS/DSing AF's
         -- Actor/actee in different groups
     
+    The boolean "limitLogDates" indicates if the dates from the log should be
+    limited to the date range within the data in dataLines.
+
     The boolean "showSpecifics" allows the option to choose whether (True) or
     not (False) the actual data that elicited each alert/error should be
     included in the output.
-    
+        
     dataLines is a list of list of strings, presumed to be all the data from a
     file, stripped and split.  Each list of strings should have a 'yyyy-mm-dd'
     date at [2], and a hh:mm:ss time at [3]. A code indicating the sample's
     "type" should be at [0].
     
     Returns a single string that will include several line breaks.
-    '''    
+    '''
+    # Make sure log stuff is logical
+    if focalLogPath == "" and limitLogDates:
+        print "Can't limit log dates when no log is provided!"
+        limitLogDates == False
+    
     alertLines = []
 
     # Add summary header
@@ -229,7 +237,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", showSpecifics = True):
     # Check for logged (as complete) focals that aren't in the data
     if focalLogPath <> "":
         # Then a log was provided. Do this check.
-        alertData = getLoggedNotDone(dataLines, focalLogPath)
+        alertData = getLoggedNotDone(dataLines, focalLogPath, limitLogDates)
         commentLine = writeAlert("Logged samples that aren't in the data", alertData, showSpecifics) + '\n'
         alertLines.append(commentLine)
     
@@ -256,7 +264,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", showSpecifics = True):
     
     return '\n'.join(alertLines)
 
-def errorCheck (inFilePath, outFilePath, focalLogPath = ""):
+def errorCheck (inFilePath, outFilePath, focalLogPath = "", limitLogDates = False):
     '''
     Checks the data in the file at inFilePath for possible errors.
     Also does some counting of basic statistics about the data, e.g. (how many focals, how many adlibs, etc.)
@@ -265,9 +273,10 @@ def errorCheck (inFilePath, outFilePath, focalLogPath = ""):
         retained. New data will be added to the top, followed by what was
         already there.
     focalLogPath is the (optional) path to a focal sample log, which will allow a few additional kinds of checks to occur.
+    limitLogDates is a boolean, used to indicate whether comparisons with the log should be limited only to the date range in the data at inFilePath.
     Prints a message that the process is complete.
     Returns nothing.
-    '''
+    '''    
     # Check if previous summary exists
     prevData = [] # To hold previous data, if any
     if path.isfile(outFilePath):
@@ -296,7 +305,7 @@ def errorCheck (inFilePath, outFilePath, focalLogPath = ""):
     outFile.write(outMsg + '\n\n')
     
     print "Getting errors and alerts summary"
-    outMsg = errorAlertSummary(allEvents, focalLogPath, showSpecifics=True)
+    outMsg = errorAlertSummary(allEvents, focalLogPath, limitLogDates, showSpecifics=True)
     outFile.write(outMsg + '\n')
 
     if len(prevData) > 0:

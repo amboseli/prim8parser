@@ -1004,3 +1004,14 @@ def writeHeader(aFilePath):
     thisTime = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     
     return thisTime + ' analysis of file: ' + fileName
+
+def yyyymmddToDate(dateString):
+    '''
+    dateString is a string containing a date in the format "yyyy-mm-dd".
+    
+    Returns a datetime object from the provided date.
+    '''
+    from datetime import datetime
+    
+    return datetime.strptime(dateString, '%Y-%m-%d')
+
