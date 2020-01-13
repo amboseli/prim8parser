@@ -12,9 +12,10 @@ not performed here, and the text of some of the alerts is reworded.
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
+from constants import *
 from compareFocalLogs import *
 from errorCheckingHelpers import *
-from constants import textBoundary
+from feedbackHelpers import *
 from os import path
 
 def observerDataSummary(dataLines, doDailyFocals = True):
@@ -44,22 +45,22 @@ def observerDataSummary(dataLines, doDailyFocals = True):
     
     # Add first and last day/time
     firstTime, lastTime = firstAndLastLines(dataLines)
-    commentLine = 'Data begins ' + firstTime + ' and ends ' + lastTime
+    firstTime = kenyaDateTime(firstTime, False)
+    lastTime = kenyaDateTime(lastTime, False)
+    commentLine = firstTime + ' - ' + lastTime
     summaryLines.append(commentLine)
     
     # Count lines and line types
-    commentLine = 'Total number of lines:\t\t' + str(countLines(dataLines))
-    summaryLines.append(commentLine)
-    
     typeCounts = countSummary(dataLines)
     
-    typesToCheck = [focalAbbrev]
-    for item in typesToCheck:
+    typesToCheck = {}
+    typesToCheck[focalAbbrev] = 'sample'
+    for item in sorted(typesToCheck.keys()):
         numItemsAsString = str(typeCounts.get(item, 0))
-        commentLine = 'Number of ' + item + ' lines:\t\t' + numItemsAsString
+        commentLine = 'Number of ' + typesToCheck[item] + 's:\t\t' + numItemsAsString
         summaryLines.append(commentLine)
     uniqueDates = countUniqueDates(dataLines)
-    commentLine = 'Number of sample days:\t\t' + str(uniqueDates)
+    commentLine = 'Number of sample days:\t' + str(uniqueDates)
     summaryLines.append(commentLine)
     
     # Add line break
@@ -67,11 +68,10 @@ def observerDataSummary(dataLines, doDailyFocals = True):
     
     if doDailyFocals:
         # Daily breakdown of focals collected
-        commentLine = countLinesPerDay(dataLines, focalAbbrev)
+        commentLine = kenyaLinesPerDay(dataLines, focalAbbrev, 'Sample')
         summaryLines.append(commentLine)
     
     return '\n'.join(summaryLines)
-
 
 def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     '''
@@ -97,6 +97,9 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     
     Returns a single string that will include several line breaks.
     '''
+    print "Begin feedbackAlerts. First row of dataLines is:"
+    print dataLines[0]
+    
     alertLines = []
 
     # Add summary header
@@ -104,54 +107,89 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     alertLines.append(commentLine)
     
     # Check for focal samples with no points
-    alertData = ['\t'.join(line) for line in theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev])]
+    print "Check for focal samples with no points"
+    alertData = [kenyaFixLine(line) for line in theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev])]
+    alertData = ['\t'.join(line) for line in alertData]
     commentLine = writeAlert('Focal samples without points', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
     # Check for focal samples with >10 points
-    alertData = [(focal + '; ' + str(count) + ' points') for (focal, count) in checkTooManyPoints(dataLines)]
-    commentLine = writeAlert('Focal samples with > 10 points', alertData, showSpecifics) + '\n'
+    print "Check for focal samples with >10 points"
+    alertData = []
+    for (focal, count) in checkTooManyPoints(dataLines):
+        focal = focal.strip().split('\t')
+        focal = kenyaFixLine(focal)
+        focal = '\t'.join(focal)
+        alertData.append(focal + '; ' + str(count) + ' points')
+    commentLine = writeAlert('Focal samples with more than 10 points', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
     # Check for in-sight points with no neighbors
-    nonMatchingPoints = ['\t'.join(line) for line in checkPointMatchesFocal(dataLines)] # To be excluded below
+    print "Check for in-sight points with no neighbors"
     alertData = theseWithoutThose(dataLines, pntAbbrev, [neighborAbbrev], beforeThem = [focalAbbrev])
-    alertData = ['\t'.join(line) for line in alertData if line[6] != outOfSightValue] #Exclude out-of-sight points
-    alertData = [line for line in alertData if line not in nonMatchingPoints] #Exclude non-matching points
-    commentLine = writeAlert('In-sight points w/o neighbors', alertData, showSpecifics) + '\n'
+    alertData = [line for line in alertData if line[6] != outOfSightValue] #Exclude out-of-sight points
+    alertData = [line for line in alertData if line not in checkPointMatchesFocal(dataLines)] #Exclude non-matching points
+    alertData = ['\t'.join(kenyaFixLine(line)) for line in alertData]
+    commentLine = writeAlert('Points where you forgot to enter neighbors', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
         
     # Second, points with >3 neighbors
-    alertData = [pair[0] for pair in checkNeighborsPerPoint(dataLines) if pair[1] > 3]
-    commentLine = writeAlert('Points with >3 neighbors', alertData, showSpecifics) + '\n'
+    print "Check for points with >3 neighbors"
+    alertData = []
+    for (point, neighbors) in checkNeighborsPerPoint(dataLines):
+        if neighbors > 3:
+            point = point.strip().split('\t')
+            point = kenyaFixLine(point)
+            point = '\t'.join(point)
+            alertData.append(point)
+    commentLine = writeAlert('Points with more than 3 neighbors', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
     # Check for non-unique neighbors in juvenile samples
-    alertData = checkUniqueNeighbors(dataLines, [stypeJuv])
-    numForAlert = len([line for line in alertData if len(line) > 0 and isType(line, pntAbbrev)])
+    print "Check for non-unique neighbors in juvenile samples"
+    alertData = [line for line in checkUniqueNeighbors(dataLines, [stypeJuv]) if len(line) > 0 and isType(line, pntAbbrev)]
+    alertData = [kenyaFixLine(line) for line in alertData]
     alertData = ['\t'.join(line) for line in alertData]
-    commentLine = writeAlert('Juvenile points with repeating neighbors (using adult female protocol for neighbors?)', alertData, showSpecifics, numForAlert) + '\n'
+    commentLine = writeAlert('Juvenile points where you used adult female protocol for neighbors', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
-        
+    
     # Check for data where actor is actee, or focal is neighbor
-    alertData = ['\t'.join(line) for line in checkActorIsActee(dataLines)]
-    commentLine = writeAlert('Individual interacted with itself, or focal is its own neighbor', alertData, showSpecifics) + '\n'
+    print "Check for data where actor is actee"
+    selfToSelf = checkActorIsActee(dataLines)
+    alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, adlibAbbrev)]
+    alertData = ['\t'.join(line) for line in alertData]
+    commentLine = writeAlert('Adlibs where individual interacted with itself', alertData, showSpecifics) + '\n'
+    alertLines.append(commentLine)
+    
+    print "Check for rows where focal is neighbor"
+    alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, neighborAbbrev)]
+    alertData = ['\t'.join(line) for line in alertData]
+    commentLine = writeAlert('Neighbor rows where focal is its own neighbor', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
         
     # Check for focals done that aren't in the log (if provided).
     # Exclude focals with no points.
     if focalLogPath <> "":
         # Then a log was provided. Do this check.
+        print "Check for focals done that aren't in the log"
         alertData = getFocalsNotLogged(dataLines, focalLogPath)
-        alertData = [line[0]+"\t"+line[2]+" point(s) in sight, out of "+line[1] for line in alertData if int(line[1]) > 0]
-        commentLine = writeAlert("Focal samples that aren't in the log", alertData, showSpecifics) + '\n'
+        # This level of detail is not wanted, apparently
+        # alertData = [line[0]+"\t"+line[2]+" point(s) in sight, out of "+line[1] for line in alertData if int(line[1]) > 0]
+        alertData = [(line[0]).strip().split('\t') for line in alertData]
+        alertData = [kenyaFixLine(line) for line in alertData]
+        alertData = ['\t'.join(line) for line in alertData]
+        commentLine = writeAlert("Focal samples that you didn't enter in the log", alertData, showSpecifics) + '\n'
         alertLines.append(commentLine)
     
     # Check for logged (as complete) focals that aren't in the data
     if focalLogPath <> "":
         # Then a log was provided. Do this check.
-        alertData = getLoggedNotDone(dataLines, focalLogPath)
-        commentLine = writeAlert("Logged samples (with a check) that aren't in the data", alertData, showSpecifics) + '\n'
+        print "Check for logged (as complete) focals that aren't in the data"
+        alertData = []
+        for line in getLoggedNotDone(dataLines, focalLogPath):
+            line = line.strip().split('\t')
+            alertData.append(kenyaDateTime(line[0], False) + '\t' + line[3])
+        commentLine = writeAlert("Focal samples in the log but aren't in the data", alertData, showSpecifics) + '\n'
         alertLines.append(commentLine)
     
     return '\n'.join(alertLines)
@@ -194,4 +232,3 @@ def makeFeedback (inFilePath, outFilePath, focalLogPath = ""):
     outFile.close()
     outMsg = "Finished checking data in " + path.basename(inFilePath)
     print outMsg
-
