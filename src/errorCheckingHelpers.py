@@ -971,11 +971,10 @@ def writeAlert(checkFor, alertData, showSpecifics = True, numForAlert = ''):
     alertData is a list of strings, and may be empty. If non-empty, each string
     will be written as an example case of the condition described in checkFor.
     '''
-    if numForAlert == '':
-        numForAlert = len(alertData)
+    outNum = numForAlert or len(alertData) or 'None'
     
     resultInfo = []
-    commentLine = checkFor + ':\t' + str(numForAlert)
+    commentLine = checkFor + ':\t' + str(outNum)
     resultInfo.append(commentLine)
     
     if showSpecifics:
