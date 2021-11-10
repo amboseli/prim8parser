@@ -5,6 +5,8 @@ ATF	Azima tetracantha fruits
 ATL	Azima tetracantha leaves
 ATX	Azima tetracantha unknown part
 BGF	Balanites grabla fruit
+CAF	Commerina africana fruits
+CAS	Commerina africana stems
 CDL	Cynodon dactylon leaves
 CMF	Comia monoica (sandpaper plant) fruits
 CTF	Capparis tomentosa fruit
@@ -18,6 +20,7 @@ FTL	Fever tree leaves
 FTP	Fever tree pods
 FTX	Fever tree unknown part
 GAR	Garbage
+GBF	Grewia bicolor fruits
 GRC	Grass corms of other or unknown species
 GRD	Grass seed head
 GRL	Grass leaves of other or unknown species
@@ -60,6 +63,7 @@ UNK	Unknown
 VRT	Vertebrate
 WAX	Water
 WSF	Withania fruits
+XAF	Ximania americana fruits
 XXB	Other or unknown blossoms
 XXC	Other or unknown corms
 XXD	In or under dung, or other or unknown seed
