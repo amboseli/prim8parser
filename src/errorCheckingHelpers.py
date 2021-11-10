@@ -157,6 +157,60 @@ def checkDuplicateGroups(dataLines):
     
     return duplicateFocals
 
+def checkFocalInfantStatus(dataLines, moms):
+    '''
+    dataLines is a list of list of strings, presumed to be all the data from a
+    file, stripped and split.  The following are assumed true about the lists
+    of strings:
+        1) The line "type" is indicated by the string at [0]
+        2) The date and time of the event are at [2] and [3] respectively
+        3) In lines indicating a focal point, the focal individual's ID is at
+            [5] and their activity/position/etc. are in [6].
+        4) Data in [6] indicate presence/absence of an infant if the string is
+            exactly 4 characters long.  Characters 3-4 are about the infant.
+            If she has no infant, character #3 will be pntActNoInfant. If she
+            does have one, it will be anything else.
+    
+    Gathers all the lines from dataLines that represent individual "points" in
+    a focal sample, then checks each one to see if the row's data says
+    anything about the presence or absence of the focal's infant. Next, this
+    function uses the provided dictionary, moms, to see if the focal really
+    did or did not have an infant on that day. Any rows where the focal data
+    disagrees with "moms", regarding whether or not she has an infant are
+    returned. Each row has an extra string appended to the end, indicating her
+    infant status according to "moms": "(HAS INFANT)" or "(NO INFANT)".
+    
+    Returns a list of lists of strings, the aforementioned rows. If no rows
+    found with this discrepancy, returns an empty list.
+    '''
+    from constants import pntAbbrev, pntActNoInfant
+    
+    thePnts = [line for line in dataLines if isType(line,pntAbbrev)]
+    wrongInfPnts = []
+    
+    # Dict with string explanation of whether the focal individual has an
+    # infant according to "moms"
+    momsStr = {}
+    momsStr[True] = '(HAS INFANT)'
+    momsStr[False] = '(NO INFANT)'
+    
+    for pnt in thePnts:
+        if len(pnt[6]) < 4:
+            # This point does not say anything about infants. Ignore.
+            continue
+        # Else, it does say something about infants. Does it mention one, or
+        # does it specifically say that she doesn't have one?
+        pntSaysInfant = (pnt[6][2] <> pntActNoInfant)
+        # Now, what does other data (demography data, presumably) say about
+        # whether she has an infant?
+        demogSaysInfant = hasInfant(pnt, moms)
+        if pntSaysInfant <> demogSaysInfant: # Discrepant! Add to return list.
+            outLine = pnt[:]
+            outLine.append(momsStr[demogSaysInfant])
+            wrongInfPnts.append(outLine)
+    
+    return wrongInfPnts
+
 def checkFocalOverlaps(dataLines):
     '''
     dataLines is a list of list of strings, presumed to be all the data from a
@@ -776,6 +830,80 @@ def getPointsPerFocal(dataLines):
             focalCounts[lastFocal].append(line)
     
     return focalCounts
+
+def hasInfant(dataLine, momDict):
+    '''
+    Asks if the focal individual in dataLine actually had an infant on the
+    date in dataLine. (Which is important, because some activity codes presume
+    existence of an infant, or lack thereof.) Returns True (she does) or False,
+    based on the info in momDict.
+    
+    momDict is a dictionary of moms and their kids, presumably created by the
+    momsAndInfants() function.
+    
+    If the focal individual doesn't exist in momDict, returns False. As
+    opposed to an error.
+    '''
+    thisMom = dataLine[5]
+    thisDate = getDateTime(dataLine, 2, 3)
+    
+    if thisMom[:] not in momDict:
+        return False
+    
+    for kid in momDict[thisMom[:]]:
+        kidBirth = kid[0]
+        kidEnd = kid[1]
+        if thisDate >= kidBirth and thisDate <= kidEnd: # Found an infant
+            return True
+    
+    # No infant found
+    return False
+
+def momsAndInfants(momDataFilePath):
+    '''
+    Opens the file at momDataFilePath and uses its data to make a dictionary
+    of moms, where each value is a list of her kids. Returns that dictionary.
+    
+    momDataFilePath, is a string that is a path to a file.  That file should be
+    a tab-delimited list of moms and her infants, formatted as follows:
+        Line 1:      mom    bioid    kid_birth    end_date
+        Line 2-n:    (data) (data)   (data)       (data)
+                                     (Dates in yyyy-mm-dd)
+        
+        Column descriptions:
+            mom: the mom's name/ID
+            bioid: unique identifier for the infant. Not used by this function.
+            kid_birth: date that this kid was born
+            end_date: first date that this kid was no longer an infant, for
+                whatever reason
+    
+    The keys in the dictionary are populated from the "mom" column. The values
+    in the dictionary are a list of (kid_birth, end_date) tuples, in which
+    those dates have been converted from strings to datetime objects. E.g. the
+    the value for a mom with 3 kids will be a list of 3 tuples, each having
+    the date boundaries during which that kid was the mom's "infant".
+    '''
+    from datetime import datetime
+    
+    momFile = open(momDataFilePath, "rU")
+    momFile.readline() # Skip the column descriptions
+    
+    momDict = {}
+    
+    for line in momFile:
+        thisLine = line.strip().split('\t')
+        thisMom = thisLine[0]
+        kidBirth = datetime.strptime(thisLine[2],'%Y-%m-%d')
+        endDate = datetime.strptime(thisLine[3],'%Y-%m-%d')
+        thisKid = (kidBirth, endDate)
+        if thisMom[:] in momDict.keys(): # This mom already added. Add the kid
+            momDict[thisMom[:]].append(thisKid)
+        else: # This mom not yet added. Add mom and this kid
+            momDict[thisMom[:]] = [thisKid]
+    
+    momFile.close()
+    
+    return momDict
 
 def pointsOutOfSight(dataLines):
     '''

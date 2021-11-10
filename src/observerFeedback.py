@@ -79,6 +79,7 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     the data that should be brought to the attention of the observers:  
         -- Focals with no points
         -- Focals with >10 points
+        -- Points implying focal has an infant when she doesn't, and vice versa
         -- Points w/ no neighbors (exclude out of sight points)
         -- Points w/ >3 neighbors
         -- Points from juvenile samples with non-unique neighbors
@@ -122,6 +123,16 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
         focal = '\t'.join(focal)
         alertData.append(focal + '; ' + str(count) + ' points')
     commentLine = writeAlert('Focal samples with more than 10 points', alertData, showSpecifics) + '\n'
+    alertLines.append(commentLine)
+    
+    # Points implying focal has an infant when she doesn't, and vice versa
+    # First, get a dictionary of moms and their kids
+    moms = momsAndInfants("./momsAndInfants.txt")
+    alertData = checkFocalInfantStatus(dataLines, moms)
+    # Prune this a bit, so we can use the "kenyaFixLine" function.
+    alertData = [line[0:7] + [line[-1]] for line in alertData]
+    alertData = ['\t'.join(kenyaFixLine(line, True)) for line in alertData]
+    commentLine = writeAlert("Points with infant when female has no infant, and vice versa", alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
     # Check for in-sight points with no neighbors

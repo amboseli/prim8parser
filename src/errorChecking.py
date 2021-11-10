@@ -80,6 +80,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", limitLogDates = False, showS
         -- Focals with no points
         -- Points with date/focal individual different from the current focal sample
         -- Focals with >10 points
+        -- Points implying focal has an infant when she doesn't, and vice versa
         -- Points w/ no neighbors (exclude out of sight points)
         -- Neighbors w/o a preceding PNT
         -- Points w/ >3 neighbors
@@ -170,6 +171,14 @@ def errorAlertSummary(dataLines, focalLogPath = "", limitLogDates = False, showS
     # Check for focal samples with >10 points
     alertData = [(focal + '; ' + str(count) + ' points') for (focal, count) in checkTooManyPoints(dataLines)]
     commentLine = writeAlert('Focal samples with > 10 points', alertData, showSpecifics) + '\n'
+    alertLines.append(commentLine)
+    
+    # Points implying focal has an infant when she doesn't, and vice versa
+    # First, get a dictionary of moms and their kids
+    moms = momsAndInfants("./momsAndInfants.txt")
+    alertData = checkFocalInfantStatus(dataLines, moms)
+    alertData = ['\t'.join(line) for line in alertData]
+    commentLine = writeAlert('ADF points where infant presence/absence disagrees with demog data', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
     # Check for in-sight points with no neighbors

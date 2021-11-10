@@ -114,6 +114,13 @@ stypesBabase[stypeJuv] = 'J'
 # Focal activity that indicates feeding
 focalFeeding = 'F'
 
+# Focal things implying infant presence/absence
+# In adult female PNT rows, the act/behavior is 4 alphanumeric characters. The
+# last two of those indicate something about the focal female's infant, if she
+# has one. If she doesn't have an infant at the time, then the first of those
+# two characters should be:
+pntActNoInfant = 'N'
+
 # Maximum number of points in a focal sample.  If more than this,
 # then problem.
 maxPointsPerFocal = 10
