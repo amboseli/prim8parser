@@ -53,7 +53,7 @@ def checkActorActeeNotReal(dataLines):
     
     linesOfInterest = [line for line in dataLines if isType(line, adlibAbbrev)]
     
-    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs or len(line[5]) <> 3 or len(line[7]) <> 3]
+    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs or len(line[5]) != 3 or len(line[7]) != 3]
 
 def checkActorIsActee(dataLines):
     '''
@@ -200,11 +200,11 @@ def checkFocalInfantStatus(dataLines, moms):
             continue
         # Else, it does say something about infants. Does it mention one, or
         # does it specifically say that she doesn't have one?
-        pntSaysInfant = (pnt[6][2] <> pntActNoInfant)
+        pntSaysInfant = (pnt[6][2] != pntActNoInfant)
         # Now, what does other data (demography data, presumably) say about
         # whether she has an infant?
         demogSaysInfant = hasInfant(pnt, moms)
-        if pntSaysInfant <> demogSaysInfant: # Discrepant! Add to return list.
+        if pntSaysInfant != demogSaysInfant: # Discrepant! Add to return list.
             outLine = pnt[:]
             outLine.append(momsStr[demogSaysInfant])
             wrongInfPnts.append(outLine)
@@ -365,7 +365,7 @@ def checkNeighborNotReal(dataLines):
     
     linesOfInterest = [line for line in dataLines if isType(line, neighborAbbrev)]
     
-    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs or len(line[5]) <> 3 or len(line[7]) <> 3]
+    return [line for line in linesOfInterest if line[5] in plcHoldrs or line[7] in plcHoldrs or len(line[5]) != 3 or len(line[7]) != 3]
 
 def checkNeighborsPerPoint(dataLines):
     '''
@@ -885,7 +885,7 @@ def momsAndInfants(momDataFilePath):
     '''
     from datetime import datetime
     
-    momFile = open(momDataFilePath, "rU")
+    momFile = open(momDataFilePath, "r")
     momFile.readline() # Skip the column descriptions
     
     momDict = {}

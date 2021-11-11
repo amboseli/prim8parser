@@ -43,14 +43,14 @@ def gatherAgonisms(fileSoFarPath, newDataFilePath, minDate, maxDate):
     '''
     agonismsSoFar = set(getAgonismsFromFile(fileSoFarPath, minDate, maxDate))
     newAgonisms = set(getAgonismsFromFile(newDataFilePath, minDate, maxDate))
-    print 'Agonisms collected so far:', len(agonismsSoFar)
-    print 'Agonisms in the new file:', len(newAgonisms)
+    print('Agonisms collected so far:', len(agonismsSoFar))
+    print('Agonisms in the new file:', len(newAgonisms))
     uniqueAgonisms = agonismsSoFar | newAgonisms
-    print 'New total agonisms:', len(uniqueAgonisms)
+    print('New total agonisms:', len(uniqueAgonisms))
     
     # Check to see if anything was added at all
     if len(uniqueAgonisms) -  len(agonismsSoFar) <= 0: # I'm pretty sure it'll never be less than 0, but what the hey
-        print 'No new agonisms added!'
+        print('No new agonisms added!')
     
     uniqueList = list(uniqueAgonisms)
     # Sort list by group, actor, actee, date, time
@@ -60,7 +60,7 @@ def gatherAgonisms(fileSoFarPath, newDataFilePath, minDate, maxDate):
     outFile.write('Agonisms recorded between ' + minDate + ' and ' + maxDate + '\n')
     outFile.writelines(uniqueList)
     outFile.close()
-    print "Finished compiling agonisms from ", newDataFilePath
+    print("Finished compiling agonisms from ", newDataFilePath)
 
 
 

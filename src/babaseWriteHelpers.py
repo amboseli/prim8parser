@@ -23,7 +23,7 @@ def checkIfBehavior(dataLine, ifBehavs):
     '''
     # Make sure dataLine has a behavior field to check
     if len(dataLine) < 7:
-        print "Can't check for invalid behaviors, line is too short:", dataLine
+        print("Can't check for invalid behaviors, line is too short:", dataLine)
         return True
     
     return dataLine[6] in ifBehavs

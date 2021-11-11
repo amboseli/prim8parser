@@ -6,6 +6,7 @@ Created on 27 Aug 2015
     Functions used to clean and process data from the prim8 import file into data usable by the rest of the program.
 
 '''
+import sys
 import csv
 from datetime import datetime, timedelta
 
@@ -20,14 +21,25 @@ def removeExtraNewLines(filePath):
     Returns a list of strings: one string per line from file, with carriage returns/newlines removed.
     
     Useful because the team's data occasionally includes newline characters (but not carriage returns) in the middle of their data, e.g. "Out of S\night"  
-    It's not yet clear how this is happening, but these unwanted newlines cause trouble when reading the data file one line at a time.  
+    It's not yet clear how this is happening, but these unwanted newlines cause trouble when reading the data file one line at a time.
+    
+    In Python3, files are read as "universal", i.e. the "\r\n" in the lines of
+    the original file are automatically converted (at least on a Unix machine)
+    to "\n".  So in converting to Python3, this function isn't helpful because
+    it just removes ALL newline characters and turns big multi-row files into
+    a single very-long row.
+    
+    The mysterious unwanted newlines that sometimes appeared in the data, for
+    which this function was created, don't really happen anymore anyway. They
+    seemed like a systemic issue at the time but were probably just random
+    user errors or something. So this function probably just needs to go away.
     '''
     openedFile = open(filePath,'r')
-    print "Reading raw input file"
+    print("Reading raw input file")
     fullText = openedFile.read()
     fullText = fullText.replace(u"\u000A","") ##Replace all newlines ('\n') with nothing
     fullText = fullText.replace(u"\u000D",u"\u000D\u000A") ##Replace all carriage returns ('\r') with carriage return, new line ('\r\n')
-    print "Finished checking for unwanted newlines"
+    print("Finished checking for unwanted newlines")
     openedFile.close()
     return fullText.splitlines()
 
@@ -40,7 +52,14 @@ def cleanDumpData(filePath):
     Performs comma-separated split using csvreader to account for the possibility of commas in data fields.
     Returns a list of lists of strings: each (inner) list of strings represents one line of data from openedFile. 
     '''
-    fullText = removeExtraNewLines(filePath) # File is opened and closed here
+    # Don't use the removeExtraNewLines function anymore.  Probably.
+    #fullText = removeExtraNewLines(filePath) # File is opened and closed here
+    
+    # Open-read-close the file here, now that we're not using the above function
+    theFile = open(filePath, "r")
+    fullText = theFile.read().splitlines()
+    theFile.close()
+    
     fullText = csv.reader(fullText, delimiter=',', quotechar='"')
     return fullText
 
@@ -63,45 +82,46 @@ def makeAllDicts(filePath):
     
     currentDictName = '' ##Used in the below "for" loop, to indicate which dictionary to add all the data
     for n,line in enumerate(allLines): ##Enumerating and adding n to allow the return of line numbers in case there's an error
+        print("Line " + str(n) + ": "+  " ".join(line))
         ##TODO: Change the way line number is returned. If the input file has any spurious newline characters, then n does not accurately indicate line number in the original file.
         if len(line) == 1: ##Then the line should indicate the beginning of a new table.  Until a new table starts, all following lines should be added to the dictionary of this name.
             if line[0] not in p8TableList: ##Then there's a problem in the file
-                print "Problem at line", (n+1), ":", line[0], " is not a recognized table name"
+                print("Problem at line", (n+1), ":", line[0], " is not a recognized table name")
                 fullDict = {} ##Empty the dictionary, to essentially halt any processes that may come after
                 return fullDict
-            print 'Begin', line[0], 'dictionary.'
+            print('Begin', line[0], 'dictionary.')
             currentDictName = line[0]
         else: ##Line should be actual data to add to a table
             for x,item in enumerate(line): ##Check for numbers that are saved as strings
                 if item.isdigit(): ##then item is a number and shouldn't stay a string
                     line[x] = int(item)
             fullDict[currentDictName][line[0]] = line[1:] ##Set the first column of the data as the key, everything else as the value
-            ##print 'Added', line[1:], "to", currentDictName, 'with key #', line[0]
+            print('Added', line[1:], "to", currentDictName, 'with key #', line[0])
     fullDict = addInstancesModifiersDict(fullDict)
-    print 'Finished creating dictionary of dictionaries!'
+    print('Finished creating dictionary of dictionaries!')
     return fullDict
 
 def addInstancesModifiersDict(masterDict):
     '''
-    Given the big main dictionary of dictionaries masterDict, which is assumed to contain a "modifiers" dictionary.
-    Adds another dictionary to masterDict, whose name is specified in constants.py as dictInstMods.
+    Given the big main dictionary of dictionaries masterDict, which is assumed
+    to contain a "modifiers" dictionary, adds another dictionary (details
+    below) to masterDict. The new dictionary's name is specified in the
+    constants file as dictInstMods.
     
-    This dictionary shows an association between behavior instances and modifiers. The dictionary's keys are behavior_instancesid's
-      from the modifiers table.  Values are the modifiers_id's. 
+    This new dictionary shows an association between behavior instances and
+    modifiers. I.e. 'this' behavior has 'this' modifier/note with it. The
+    dictionary's keys are behavior_instancesid's from the modifiers table.
+    Values are the modifiers_id's. 
     
     Returns the updated masterDict.
     '''
     ##TODO: Don't bother making a new dictionary, and just make a function that fetches data from the modifiers table as it is?
     from constants import dictInstMods, p8modifiers
-    modifierIDs = sorted(masterDict[p8modifiers].keys()) ##Get list of all the modifiers_id's
-    ##Remove the key for the modifiers table "legend"
-    if len(modifierIDs) > 0: ##Make sure there is any such data
-        modifierIDs.pop()
-    masterDict[dictInstMods] = {}
-    for mod_id in modifierIDs:
-        instance_id = masterDict[p8modifiers][mod_id][0]
-        masterDict[dictInstMods][instance_id] = mod_id
-    print "Dictionary", dictInstMods, "populated"
+    
+    # Skip the column "legend" when adding data
+    masterDict[dictInstMods] = {v[0]:k for (k,v) in masterDict[p8modifiers].items() if str(k).isdigit()}
+    
+    print(dictInstMods, "dictionary populated")
     return masterDict
 
 def rawGetDateTime (itemList, yearIndex):
@@ -110,7 +130,7 @@ def rawGetDateTime (itemList, yearIndex):
     (Assumes that "Year" is followed by Month, Day, Time)
     Outputs the date and time as a single "datetime" object.
     '''
-    print "Making date/time beginning at", itemList[yearIndex], "from list", itemList
+    print("Making date/time beginning at", itemList[yearIndex], "from list", itemList)
     thisYear = itemList[yearIndex]
     thisMonth = itemList[yearIndex+1]
     thisDay = itemList[yearIndex+2]
@@ -119,7 +139,7 @@ def rawGetDateTime (itemList, yearIndex):
     thisMinute = int(timeList[1])
     thisSecond = int(timeList[2])
     outDateTime = datetime(thisYear, thisMonth, thisDay, thisHour, thisMinute, thisSecond)
-    ##print "Date/time is", outDateTime
+    ##print("Date/time is", outDateTime)
     return outDateTime
 
 def getYearIndex (someDictionary):
@@ -131,8 +151,16 @@ def getYearIndex (someDictionary):
         4) (preferably) one of the items in the "legend" values == "Year"
     Return the index in the list of strings where the "Year" value occurs.  Or -1.
     '''
-    dictKeys = sorted(someDictionary.keys()) ##Get all the keys, and sort them
-    keyTableLegend = dictKeys[-1] ##When sorted, the one non-integer key will be after all the integers
+    keyTableLegend = ''
+    for k in someDictionary.keys():
+        if type(k) == str:
+            keyTableLegend = k
+            break
+    
+    if keyTableLegend == '':
+        print("Error: couldn't find a legend in this dictionary")
+        sys.exit()
+    
     tableLegend = someDictionary[keyTableLegend]
     index = 0
     for i in tableLegend:
@@ -140,6 +168,7 @@ def getYearIndex (someDictionary):
             return index
         else:
             index += 1
+    print("Couldn't find a 'year' in this dictionary")
     return -1
 
 def addEventKeys (targetList, sourceDictionary, dictName):
@@ -148,11 +177,10 @@ def addEventKeys (targetList, sourceDictionary, dictName):
     Used to combine data ("events") of different types together into a single list that can easily be sorted by time.  
     Returns the appended list. (or, if there were no data in targetList to add, returns the unappended list)  
     '''
-    ##Get and sort all the keys in the dictionary. Except for the "legend", these should just be ID numbers.
-    eventKeys = sorted(sourceDictionary.keys())
+    ##Get and sort all the keys in the dictionary, except the "legend". Omitting that should leave only ID numbers
+    eventKeys = sorted([k for k in sourceDictionary.keys() if str(k).isdigit()])
     if len(eventKeys) == 0: ##Then there were no events recorded in the given table. 
         return targetList
-    eventKeys.pop() ##Remove the table "legend". As the only non-integer key, it will be last in the sorted list.
     for i in eventKeys:
         yrIdx = getYearIndex(sourceDictionary)
         eventDateTime = rawGetDateTime(sourceDictionary[i], yrIdx)
@@ -216,7 +244,7 @@ def multipleObservers(masterDict):
     Returns True (yes, more than one observer) or False (0-1 observers).
     '''
     from constants import p8observers
-    obs = [value[2] for (key, value) in masterDict[p8observers].iteritems() if type(key) == int]
+    obs = [value[2] for (key, value) in iter(masterDict[p8observers].items()) if type(key) == int]
     return len(obs) > 1
 
 def getGroupAbbrev(masterDict, grpIDNum):
@@ -235,10 +263,10 @@ def getGroupAbbrev(masterDict, grpIDNum):
     currentGrpName = (masterDict[p8groups][grpIDNum][0])  ##Get group name
     if currentGrpName.upper() in groupsLong: ##This _should_ be always true
         grpIndex = groupsLong.index(currentGrpName.upper())
-        print ("Replacing group name '" + currentGrpName + "' with '" + groupsShort[grpIndex] + "'")
+        print("Replacing group name '" + currentGrpName + "' with '" + groupsShort[grpIndex] + "'")
         currentGrpName = groupsShort[grpIndex]
     else:
-        print "Group name" + currentGrpName + "not recognized!"
+        print("Group name" + currentGrpName + "not recognized!")
     return currentGrpName
 
 def getfocalStype(eventKey, masterDict):
@@ -312,11 +340,11 @@ def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
         foodsLong, foodsShort = getCodes('./foodcodes.txt', 1, 0) # Get food codes
         if modifier.upper() in foodsLong: ##Then the modifier is a food, and we want to change it to its abbreviation.
             foodIndex = foodsLong.index(modifier.upper())
-            print ("Replacing food code '" + modifier + "' with '" + foodsShort[foodIndex] + "'")
+            print("Replacing food code '" + modifier + "' with '" + foodsShort[foodIndex] + "'")
             modifier = foodsShort[foodIndex] ##Replace the long food name with its short name
         outList.append(modifier.upper())
     outLine = '\t'.join(outList)
-    print outLine
+    print(outLine)
     return str(outLine + '\n'), observer
 
 def writeFocalFollow(dayTime, eventKey, masterDict, focalObserver):
@@ -348,7 +376,7 @@ def writeFocalFollow(dayTime, eventKey, masterDict, focalObserver):
     endTime = dayTime + focDurDelta
     outList.append(endTime.time().isoformat())
     outLine = '\t'.join(outList)
-    print outLine
+    print(outLine)
     return str(outLine + '\n')
 
 def writeAdLib(dayTime, eventKey, masterDict, adlibObserver):
@@ -369,7 +397,7 @@ def writeAdLib(dayTime, eventKey, masterDict, adlibObserver):
     outList.append(dayTime.time().isoformat()) ## Time
     outList.append(masterDict[p8adlib][eventKey][-1]) ##Note
     outLine = '\t'.join(outList)
-    print outLine
+    print(outLine)
     return str(outLine + '\n')
 
 def getTabletLongName(tabletID):
@@ -429,31 +457,31 @@ def writeAll(outputFilePath, appName, appVersion, setupVersion, tabletID, master
                 outputFile.write(outLine)
             elif eventTable == p8focalfollows:
                 if lastObserver == '': ##we haven't had a behavior yet with an observer. So look forward to the next behavior instance and get its observer.
-                    print "Focal started with no previous observer. Getting observer."
+                    print("Focal started with no previous observer. Getting observer.")
                     soonestBehaviorKey = [key for (time, table, key) in eventList if table == p8behaviorinstances and time > eventDayTime].pop(0)
                     lastObserver = getObserver(masterDict, soonestBehaviorKey)
-                    print "Presumed observer is", lastObserver
+                    print("Presumed observer is", lastObserver)
                     outLine = writeFocalFollow(eventDayTime, tableKey, masterDict, lastObserver)
                 else:
                     outLine = writeFocalFollow(eventDayTime, tableKey, masterDict, lastObserver)
                 outputFile.write(outLine)
             elif eventTable == p8adlib:
                 if lastObserver == '': ##we haven't had a behavior yet with an observer. So look forward to the next behavior instance and get its observer.
-                    print "Adlib note recorded with no previous observer. Getting observer."
+                    print("Adlib note recorded with no previous observer. Getting observer.")
                     soonestBehaviorKey = [key for (time, table, key) in eventList if table == p8behaviorinstances and time > eventDayTime].pop(0)
                     lastObserver = getObserver(masterDict, soonestBehaviorKey)
-                    print "Presumed observer is", lastObserver
+                    print("Presumed observer is", lastObserver)
                     outLine = writeAdLib(eventDayTime, tableKey, masterDict, lastObserver)
                 else:
                     outLine = writeAdLib(eventDayTime, tableKey, masterDict, lastObserver)
                 outputFile.write(outLine)
             else:
-                print "Unrecognized table from:", (eventDayTime, eventTable, tableKey)
+                print("Unrecognized table from:", (eventDayTime, eventTable, tableKey))
                 outputFile.write('Unable to parse data'+'\n')
     else: ##there is only one observer, so this can move much faster by not re-looking up observer in every instance.
-        print "Only one observer found. Get the only observer and don't look it up in each line."
-        onlyObserver = [value[2] for (key, value) in masterDict[p8observers].iteritems() if type(key) == int].pop()
-        print onlyObserver
+        print("Only one observer found. Get the only observer and don't look it up in each line.")
+        onlyObserver = [value[2] for (key, value) in iter(masterDict[p8observers].items()) if type(key) == int].pop()
+        print(onlyObserver)
         for (eventDayTime, eventTable, tableKey) in eventList:
             if eventTable == p8behaviorinstances:
                 outLine, lastObserver = writeInstance(eventDayTime, tableKey, masterDict, onlyObserver)
@@ -465,8 +493,8 @@ def writeAll(outputFilePath, appName, appVersion, setupVersion, tabletID, master
                 outLine = writeAdLib(eventDayTime, tableKey, masterDict, onlyObserver)
                 outputFile.write(outLine)
             else:
-                print "Unrecognized table from:", (eventDayTime, eventTable, tableKey)
+                print("Unrecognized table from:", (eventDayTime, eventTable, tableKey))
                 outputFile.write('Unable to parse data'+'\n')
-    print "Closing export file at", outputFilePath
+    print("Closing export file at", outputFilePath)
     outputFile.close()
     return 'Finished writing all data!'

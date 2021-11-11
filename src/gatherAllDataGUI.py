@@ -3,8 +3,8 @@ Created on 22 May 2019
 
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from gatherAllData import gatherData
 from datetime import datetime
 from os import path
@@ -69,7 +69,7 @@ class gatherAllDataGUI(Frame):
         textVariable to hold the file's path (a string).
         '''
         filePath = askopenfilename(filetypes=(('Tab-delimited','*.txt'),('All files','*.*')), title='File of data so far:')
-        print "Got file path for file", path.basename(filePath)
+        print("Got file path for file", path.basename(filePath))
         textVariable.set(filePath)
     
     def endProgram(self, root):
@@ -94,7 +94,7 @@ class gatherAllDataGUI(Frame):
         # Make sure something was entered
         for item in [input1, input2, input3, input4]:
             if len(item) == 0:
-                print "Missing value(s)!"
+                print("Missing value(s)!")
                 return False
         
         # Make sure dates are in the right format
@@ -102,7 +102,7 @@ class gatherAllDataGUI(Frame):
             try:
                 testDate = datetime.strptime(date, '%Y-%m-%d')
             except ValueError:
-                print "Date(s) in incorrect format! Need yyyy-mm-dd."
+                print("Date(s) in incorrect format! Need yyyy-mm-dd.")
                 return False
         
         # Make sure the date in tv4 is greater than tv3
@@ -123,7 +123,7 @@ class gatherAllDataGUI(Frame):
         value4 = str(input4.get())
         
         if not self.integrityCheck(value1, value2, value3, value4):
-            print "Problem with data! No work done."
+            print("Problem with data! No work done.")
         else:
             gatherData(value1, value2, value3, value4)
             # This function prints success/error messages to console,

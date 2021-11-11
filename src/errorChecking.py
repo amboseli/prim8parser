@@ -117,7 +117,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", limitLogDates = False, showS
     '''
     # Make sure log stuff is logical
     if focalLogPath == "" and limitLogDates:
-        print "Can't limit log dates when no log is provided!"
+        print("Can't limit log dates when no log is provided!")
         limitLogDates == False
     
     alertLines = []
@@ -236,7 +236,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", limitLogDates = False, showS
     alertLines.append(commentLine)
     
     # Check for focals done that aren't in the log (if provided)
-    if focalLogPath <> "":
+    if focalLogPath != "":
         # Then a log was provided. Do this check.
         alertData = getFocalsNotLogged(dataLines, focalLogPath)
         alertData = [line[0]+"\t"+line[2]+" point(s) in sight, out of "+line[1] for line in alertData]
@@ -244,7 +244,7 @@ def errorAlertSummary(dataLines, focalLogPath = "", limitLogDates = False, showS
         alertLines.append(commentLine)
     
     # Check for logged (as complete) focals that aren't in the data
-    if focalLogPath <> "":
+    if focalLogPath != "":
         # Then a log was provided. Do this check.
         alertData = getLoggedNotDone(dataLines, focalLogPath, limitLogDates)
         commentLine = writeAlert("Logged samples that aren't in the data", alertData, showSpecifics) + '\n'
@@ -289,31 +289,31 @@ def errorCheck (inFilePath, outFilePath, focalLogPath = "", limitLogDates = Fals
     # Check if previous summary exists
     prevData = [] # To hold previous data, if any
     if path.isfile(outFilePath):
-        print "Getting previous data from:", path.basename(outFilePath) 
-        outFile = open(outFilePath,'rU')
+        print("Getting previous data from:", path.basename(outFilePath))
+        outFile = open(outFilePath,'r')
         prevData = outFile.readlines()
         outFile.close()
     
-    print "Creating export file:", path.basename(outFilePath) 
+    print("Creating export file:", path.basename(outFilePath))
     outFile = open(outFilePath,'w')
     
     outMsg = writeHeader(inFilePath) 
     outFile.write(outMsg + '\n\n')
     
-    print "Opening import file:", path.basename(inFilePath)
-    impFile = open(inFilePath, 'rU')
+    print("Opening import file:", path.basename(inFilePath))
+    impFile = open(inFilePath, 'r')
     impEvents = impFile.readlines()
     impFile.close()
        
-    print "Adding all lines to allEvents list"
+    print("Adding all lines to allEvents list")
     allEvents =  [line.strip().split('\t') for line in impEvents] ##List of all lines read from the import file (impFile)
     allEvents.pop(0) ##Remove the "Parsed data..." line at the top
     
-    print "Getting data summary"
+    print("Getting data summary")
     outMsg = dataSummary(allEvents)
     outFile.write(outMsg + '\n\n')
     
-    print "Getting errors and alerts summary"
+    print("Getting errors and alerts summary")
     outMsg = errorAlertSummary(allEvents, focalLogPath, limitLogDates, showSpecifics=True)
     outFile.write(outMsg + '\n')
 
@@ -322,10 +322,10 @@ def errorCheck (inFilePath, outFilePath, focalLogPath = "", limitLogDates = Fals
         outFile.write(outMsg + '\n')
         outFile.writelines(prevData)
 
-    print "Closing export file"
+    print("Closing export file")
     outFile.close()
     outMsg = "Finished checking data in " + path.basename(inFilePath)
-    print outMsg
+    print(outMsg)
 
 #if __name__ == '__main__':
     

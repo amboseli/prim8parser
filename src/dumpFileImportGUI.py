@@ -6,8 +6,8 @@ GUI to use for processing of data exported from Prim8
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from constants import prim8Name, prim8Version, prim8Setup
 from readDumpFile import makeAllDicts, writeAll
 from os import path
@@ -83,7 +83,7 @@ class dumpFileImportGUI(Frame):
         Opens a dialog to ask for a file name to open.  Sets textVariable to hold the file's path (a string).
         '''
         filePath = askopenfilename(filetypes=(('Comma-separated','*.csv'),('All files','*.*')), title='Select a file to import:')
-        print "Got file path:", filePath
+        print("Got file path:", filePath)
         textVariable.set(filePath)
     
     def guessSaveFileName(self, openFileTV, saveFileTV):
@@ -108,9 +108,9 @@ class dumpFileImportGUI(Frame):
         
         splitSaveDir = saveDirName.split()
         saveFileName = splitSaveDir[0][2:] + splitSaveDir[2] + '.txt'
-        print "Save file predicted to be named", saveFileName
+        print("Save file predicted to be named", saveFileName)
         saveFilePath = path.join(saveDirPath, saveFileName)
-        print "Save path predicted to be", saveFilePath
+        print("Save path predicted to be", saveFilePath)
         
         saveFileTV.set(saveFilePath)
     
@@ -121,7 +121,7 @@ class dumpFileImportGUI(Frame):
         Given filePath, inserts the 2 characters representing the tablet ID into textVariable.
         '''
         tabletID = filePath[-6:-4]
-        print "Tablet ID predicted to be", tabletID 
+        print("Tablet ID predicted to be", tabletID )
         textVariable.set(tabletID)
     
     def getOpenFileAndMakeGuesses(self, openFileTV, saveFileTV, tabletTV):
@@ -146,7 +146,7 @@ class dumpFileImportGUI(Frame):
         Also makes a prediction of the tablet ID, based on the name of the saved file.
         '''
         filePath = asksaveasfilename(defaultextension='.txt', title='Name of the data file to create and write to?')
-        print "Got output file path:", filePath
+        print("Got output file path:", filePath)
         textVariableSaveFile.set(filePath)
         self.guessTabletID(filePath, textVariableTabletID)
     
@@ -154,7 +154,7 @@ class dumpFileImportGUI(Frame):
         '''
         Ends the program.
         '''
-        print "Closing program!"
+        print("Closing program!")
         root.quit()
     
     def integrityCheck(self, input1, input2, input3, input4, input5, input6):
@@ -173,7 +173,7 @@ class dumpFileImportGUI(Frame):
         # Make sure something was entered
         for item in [input1, input2, input3, input4, input5, input6]:
             if len(item) == 0:
-                print "Missing value(s)!"
+                print("Missing value(s)!")
                 return False
         return True
     
@@ -192,10 +192,10 @@ class dumpFileImportGUI(Frame):
         value6 = str(input6.get())
         
         if not self.integrityCheck(value1, value2, value3, value4, value5, value6):
-            print "Problem with data! No work done."
+            print("Problem with data! No work done.")
         else:
             allData = makeAllDicts(value1)
-            print writeAll(value2, value3, value4, value5, value6, allData)
+            print(writeAll(value2, value3, value4, value5, value6, allData))
             # Empty fields to ensure the same file and tablet ID aren't accidentally used twice
             input1.set("")
             input2.set("")

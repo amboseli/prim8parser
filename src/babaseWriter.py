@@ -32,7 +32,7 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     '''
     from constants import focalAbbrev, neighborAbbrev, noteAbbrev, adlibAbbrev, pntAbbrev, outOfSightValue
     
-    dataFile = file(dataFilePath, 'ru')
+    dataFile = open(dataFilePath, 'r')
     
     # Important values used throughout the for loop     
     prgID, setupID, tabletID = getProgramSetup(dataFile.readline()) # Read first line from file 
@@ -98,7 +98,7 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     sqlOut.append(transactionEnd)
     
     # Open file, write data
-    sqlFile = file(sqlFilePath, 'w')
+    sqlFile = open(sqlFilePath, 'w')
     sqlFile.writelines(sqlOut)
     sqlFile.close()
     

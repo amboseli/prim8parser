@@ -8,8 +8,8 @@ A GUI for checking data files for errors and potentially-problematic events.
 Adapted from the babaseWriterGUI.
 '''
 
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from babaseWriter import writeAll
 from errorChecking import errorCheck
 from os import path
@@ -94,7 +94,7 @@ class errorCheckingGUI(Frame):
         hold the file's path (a string).
         '''
         filePath = askopenfilename(filetypes=(('Tab-delimited','*.txt'),('All files','*.*')), title='Choose a file:')
-        print "Got file path:", filePath
+        print("Got file path:", filePath)
         textVariable.set(filePath)
     
     def getOpenFileAndAutofill(self, textVariable1, textVariable2, textVariable3):
@@ -109,19 +109,19 @@ class errorCheckingGUI(Frame):
         if len(sourcePath) > 0: # Only do the below if a file was selected
             summaryPath = sourcePath[:-4] + '_summary.txt' # So "./filename.txt" suggests "./filename_summary.txt"
             
-            print "Suggesting summary file path:", summaryPath
+            print("Suggesting summary file path:", summaryPath)
             textVariable2.set(summaryPath)
             
             sqlPath = sourcePath[:-4] + '_SQLout.sql' # So "./filename.txt" suggests "./filename_SQLout.sql"
             
-            print "Suggesting SQL file path:", sqlPath
+            print("Suggesting SQL file path:", sqlPath)
             textVariable3.set(sqlPath)
     
     def endProgram(self, root):
         '''
         Ends the program.
         '''
-        print "Closing program!"
+        print("Closing program!")
         root.quit()
     
     def integrityCheck(self, inputFile, focalLogFile, limitLogDates, errorCheckedFile, outSQLFile):
@@ -146,12 +146,12 @@ class errorCheckingGUI(Frame):
         for item in allParams:
             strItem = str(item)
             if len(strItem) == 0:
-                print "Missing value(s)!"
+                print("Missing value(s)!")
                 return False
         
         # If limitLogDates is True, make sure we do have a log file
         if limitLogDates and len(focalLogFile) == 0:
-            print "Limiting Log Dates, but no log file provided!"
+            print("Limiting Log Dates, but no log file provided!")
             return False
         
         # Now add focalLogFile in
@@ -181,17 +181,17 @@ class errorCheckingGUI(Frame):
         if not self.integrityCheck(inFile, logFile, limitDates, errorFile, sqlFile):
             # The dontBlank___ things aren't included because there's
             # nothing to check related to them
-            print "Problem with data! No work done."
+            print("Problem with data! No work done.")
         else:
             errorCheck(inFile, errorFile, logFile, limitDates)
             sourceFileName = path.basename(inFile)
             outFileName = path.basename(errorFile)
-            print "Finished writing summary of", sourceFileName, "to", outFileName
+            print("Finished writing summary of", sourceFileName, "to", outFileName)
             
             writeAll(inFile, sqlFile, True)
             sourceFileName = path.basename(inFile)
             outFileName = path.basename(sqlFile)
-            print "Finished writing SQL from", sourceFileName, "to", outFileName
+            print("Finished writing SQL from", sourceFileName, "to", outFileName)
             
             if not noBlankAnything:
                 inputFile.set("") #Clear out file name

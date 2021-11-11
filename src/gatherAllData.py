@@ -41,7 +41,7 @@ def getDataFromFile(filePath, minDate, maxDate):
 	written to a new file.
     '''
     outLines = []
-    openedFile = open(filePath,'rU')
+    openedFile = open(filePath,'r')
     # Add the file's header to the outward list
     outLines.append(openedFile.readline())
     fileLines = openedFile.readlines()
@@ -57,7 +57,7 @@ def getDataFromFile(filePath, minDate, maxDate):
             # Then this line is within the desired date range. Keep
             # going.
             thisRowDateTime = splitLine[2] + " " + splitLine[3]
-            if thisRowDateTime <> lastDateTime:
+            if thisRowDateTime != lastDateTime:
                 # This row is at a new, not-yet-seen date/time. Reset
                 # the constants.
                 lastDateTime = thisRowDateTime[:]
@@ -121,11 +121,11 @@ def gatherData(fileSoFarPath, newDataFilePath, minDate, maxDate):
         newDataHeader = newData.pop(0)
     elif newData[0] == '':
         # New file is empty, no work to be done
-        print "New data file is empty, no work to do"
+        print("New data file is empty, no work to do")
         return "New data file is empty, no work to do"
     
     # Merge the two headers as needed
-    if newDataHeader <> dataSoFarHeader and not dataSoFarIsEmpty:
+    if newDataHeader != dataSoFarHeader and not dataSoFarIsEmpty:
         # The files have different non-NULL headers, so use the
         # designated header made to indicate this
         newDataHeader = multiFileHeader[:]
@@ -137,14 +137,14 @@ def gatherData(fileSoFarPath, newDataFilePath, minDate, maxDate):
     newData = set(newData)
     
     # Tell the user what's happening
-    print 'Lines of data already collected:', len(dataSoFar)
-    print 'Lines of data in the new file:', len(newData)
+    print('Lines of data already collected:', len(dataSoFar))
+    print('Lines of data in the new file:', len(newData))
     uniqueData = dataSoFar | newData
-    print 'New total # of lines:', len(uniqueData)
+    print('New total # of lines:', len(uniqueData))
     
     # Check to see if anything was added at all
     if len(uniqueData) -  len(dataSoFar) == 0:
-       print 'No new data added!'
+       print('No new data added!')
     
     # Convert the set to a list, so we can put them in order
     uniqueList = list(uniqueData)
@@ -162,5 +162,5 @@ def gatherData(fileSoFarPath, newDataFilePath, minDate, maxDate):
     outFile.writelines(uniqueList)
     outFile.close()
     
-    print "Finished compiling data from ", path.basename(newDataFilePath), "to", path.basename(fileSoFarPath)
+    print("Finished compiling data from ", path.basename(newDataFilePath), "to", path.basename(fileSoFarPath))
 

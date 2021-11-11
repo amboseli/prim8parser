@@ -22,7 +22,7 @@ def getPsionLines(psionFilePath):
     Give a file path for a Psion file. Opens the file, reads and splits(',') lines, closes the file.
     Returns a list of lists.
     '''
-    inputFile = open(psionFilePath,'ru')
+    inputFile = open(psionFilePath,'r')
     allLines = inputFile.readlines()
     inputFile.close()
     return [line.split(',') for line in allLines]
@@ -46,8 +46,8 @@ def getPsionAgonisms(psionFilePath, writeToPath):
     '''
     from constants import adlibAbbrev
     allLines = getPsionLines(psionFilePath)
-    print 'Writing data at', writeToPath
-    outFile = open(writeToPath, 'wu')
+    print('Writing data at', writeToPath)
+    outFile = open(writeToPath, 'w')
     outFile.write('Agonisms extracted from Psion data\r\n')
     
     lastObserver = ''
@@ -60,14 +60,14 @@ def getPsionAgonisms(psionFilePath, writeToPath):
         elif line[0] == adlibCode and line[3] == agonismCode:
             outData = [adlibAbbrev, lastObserver, getPsionDate(line), line[2], lastGrp, line[4], line[5], line[6]]
             outLine = '\t'.join(outData)
-            print outLine
+            print(outLine)
             outFile.write(outLine)
     outFile.close()
-    print 'Finished getting data from', psionFilePath
+    print('Finished getting data from', psionFilePath)
      
 
 ##testPath = './../testpsiondata.pts'
 ##testOutPath = './../testPsionFileOut.txt'
 
-##print getPsionLines(testPath)
+##print(getPsionLines(testPath))
 ##getPsionAgonisms(testPath, testOutPath)

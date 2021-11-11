@@ -164,7 +164,7 @@ def importLogFile(logFilePath):
     Returns a list of lists of strings: the rows from the log file
     with reformatted dates and sorted.
     '''
-    logFile = open(logFilePath, "rU")
+    logFile = open(logFilePath, "r")
     logFile.readline() # Skip header
     logData = logFile.readlines()
     logFile.close()
@@ -239,11 +239,11 @@ def getFocalsNotLogged(dataLines, logFilePath):
         try: # Find thisFocal in logFocals
             logIdx = logFocals.index(thisFocal)
             # Hooray, we found it. Remove this focal from the log
-            #print "Found the focal, now remove it from the log"
+            #print("Found the focal, now remove it from the log")
             logFocals.pop(logIdx)
         except ValueError:
             # Focal not found in log. This needs to be returned.
-            #print "Focal not logged:", thisFocal, ",", line[-2], "point(s)", line[-1], "point(s) in sight"
+            #print("Focal not logged:", thisFocal, ",", line[-2], "point(s)", line[-1], "point(s) in sight")
             notLogged.append(line)
     
     # Before returning the list of not-logged samples, sort them by
@@ -317,7 +317,7 @@ def getLoggedNotDone(dataLines, logFilePath, limitLogDates = False):
         except ValueError:
             # Logged focal not in data. Add it to the list of data
             # that will be returned
-            #print "Logged focal not found in actual data:", thisFocal
+            #print("Logged focal not found in actual data:", thisFocal)
             notDone.append(thisFocal)
     
     return notDone

@@ -6,8 +6,8 @@ Created on 29 Sep 2015
 A GUI for processing data files into documents with SQL to add the data to Babase.
 '''
 
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from babaseWriter import writeAll
 from os import path
 
@@ -60,7 +60,7 @@ class babaseWriterGUI(Frame):
         Opens a dialog to ask for a file name to open.  Sets textVariable to hold the file's path (a string).
         '''
         filePath = askopenfilename(filetypes=(('Tab-delimited','*.txt'),('All files','*.*')), title='Choose a file:')
-        print "Got file path:", filePath
+        print("Got file path:", filePath)
         textVariable.set(filePath)
     
     def getOpenFileAndAutofill(self, textVariable1, textVariable2):
@@ -72,7 +72,7 @@ class babaseWriterGUI(Frame):
         sourcePath = str(textVariable1.get())
         suggestedOutPath = sourcePath[:-4] + '_SQLout.sql' # So "./filename.txt" suggests "./filename_SQLout.sql"
         
-        print "Suggesting SQL file path:", suggestedOutPath
+        print("Suggesting SQL file path:", suggestedOutPath)
         textVariable2.set(suggestedOutPath)
         
     def getSaveFileName(self, textVariableSaveFile):
@@ -80,14 +80,14 @@ class babaseWriterGUI(Frame):
         Opens a dialog to ask for a file name to save/replace.  Sets textVariableSaveFile to hold the file's path (a string).
         '''
         filePath = asksaveasfilename(defaultextension='.sql', title='Name of the data file to write SQL to?')
-        print "Got output file path:", filePath
+        print("Got output file path:", filePath)
         textVariableSaveFile.set(filePath)
         
     def endProgram(self, root):
         '''
         Ends the program.
         '''
-        print "Closing program!"
+        print("Closing program!")
         root.quit()
         
     def integrityCheck(self, input1, input2):
@@ -103,7 +103,7 @@ class babaseWriterGUI(Frame):
         # Make sure something was entered
         for item in [input1, input2]:
             if len(item) == 0:
-                print "Missing value(s)!"
+                print("Missing value(s)!")
                 return False
                 
         # Make sure the same input wasn't added twice
@@ -120,12 +120,12 @@ class babaseWriterGUI(Frame):
         value2 = str(input2.get())
         
         if not self.integrityCheck(value1, value2):
-            print "Problem with data! No work done."
+            print("Problem with data! No work done.")
         else:
             writeAll(value1, value2, True)
             sourceFileName = path.basename(value1)
             outFileName = path.basename(value2)
-            print "Finished writing SQL from", sourceFileName, "to", outFileName
+            print("Finished writing SQL from", sourceFileName, "to", outFileName)
             
             input1.set("") #Clear out file name
             input2.set("") #Clear out file name

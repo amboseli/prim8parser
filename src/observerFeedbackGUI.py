@@ -9,8 +9,8 @@ generating feedback for the field team.
 Shamelessly adapted from the errorCheckingGUI class.
 '''
 
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from observerFeedback import makeFeedback
 from os import path
 
@@ -71,7 +71,7 @@ class observerFeedbackGUI(Frame):
         hold the file's path (a string).
         '''
         filePath = askopenfilename(filetypes=(('Tab-delimited','*.txt'),('All files','*.*')), title='Choose a file:')
-        print "Got file path:", filePath
+        print("Got file path:", filePath)
         textVariable.set(filePath)
     
     def getOpenFileAndAutofill(self, textVariable1, textVariable2):
@@ -84,7 +84,7 @@ class observerFeedbackGUI(Frame):
         sourcePath = str(textVariable1.get())
         summaryPath = sourcePath[:-4] + '_feedback.txt' # So "./filename.txt" suggests "./filename_feedback.txt"
         
-        print "Suggesting summary file path:", summaryPath
+        print("Suggesting summary file path:", summaryPath)
         textVariable2.set(summaryPath)
         
     
@@ -92,7 +92,7 @@ class observerFeedbackGUI(Frame):
         '''
         Ends the program.
         '''
-        print "Closing program!"
+        print("Closing program!")
         root.quit()
     
     def integrityCheck(self, inputFile, focalLogFile, errorCheckedFile):
@@ -115,7 +115,7 @@ class observerFeedbackGUI(Frame):
         # Make sure something was entered
         for item in allParams:
             if len(item) == 0:
-                print "Missing value(s)!"
+                print("Missing value(s)!")
                 return False
         
         # Now add focalLogFile in
@@ -139,12 +139,12 @@ class observerFeedbackGUI(Frame):
         errorFile = str(errorCheckedFile.get())
                 
         if not self.integrityCheck(inFile, logFile, errorFile):
-            print "Problem with data! No work done."
+            print("Problem with data! No work done.")
         else:
             makeFeedback(inFile, errorFile, logFile)
             sourceFileName = path.basename(inFile)
             outFileName = path.basename(errorFile)
-            print "Finished writing summary of", sourceFileName, "to", outFileName
+            print("Finished writing summary of", sourceFileName, "to", outFileName)
                         
             #inputFile.set("") #Clear out file name
             #focalLogFile.set("") #Clear out file name

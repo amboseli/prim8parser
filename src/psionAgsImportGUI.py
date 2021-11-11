@@ -6,8 +6,8 @@ GUI for pulling agonisms from Psion data into a format usable by the agonism com
 @author: Jake Gordon, <jacob.b.gordon@gmail.com>
 '''
 
-from Tkinter import *
-from tkFileDialog import askopenfilename, asksaveasfilename
+from tkinter import *
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from getPsionAgs import getPsionAgonisms
 
 
@@ -58,7 +58,7 @@ class psionAgsImportGUI(Frame):
         Opens a dialog to ask for a file name to open.  Sets textVariable to hold the file's path (a string).
         '''
         filePath = askopenfilename(filetypes=(('Psion data file','*.pts'),('All files','*.*')), title='Select a Psion file to import:')
-        print "Got Psion file path:", filePath
+        print("Got Psion file path:", filePath)
         textVariable.set(filePath)
     
     def getSaveFileName(self, textVariable):
@@ -66,14 +66,14 @@ class psionAgsImportGUI(Frame):
         Opens a dialog to ask for a file name to save/replace.  Sets textVariable to hold the file's path (a string).
         '''
         filePath = asksaveasfilename(defaultextension='.txt', title='Name of the data file to create and write to?')
-        print "Got output file path:", filePath
+        print("Got output file path:", filePath)
         textVariable.set(filePath)
         
     def endProgram(self, root):
         '''
         Ends the program.
         '''
-        print "Closing program!"
+        print("Closing program!")
         root.quit()
         
     def integrityCheck(self, input1, input2):
@@ -89,12 +89,12 @@ class psionAgsImportGUI(Frame):
         # Make sure something was entered
         for item in [input1, input2]:
             if len(item) == 0:
-                print "Missing value(s)!"
+                print("Missing value(s)!")
                 return False
         
         # Make sure the two inputs aren't identical
         if input1[:] == input2[:]:
-            print "Input and output files can't be the same thing!"
+            print("Input and output files can't be the same thing!")
             return False
         
         else:
@@ -111,7 +111,7 @@ class psionAgsImportGUI(Frame):
         value2 = str(input2.get())
         
         if not self.integrityCheck(value1, value2):
-            print "Problem with data! No work done."
+            print("Problem with data! No work done.")
         else:
             getPsionAgonisms(value1, value2)
             #Empty both fields to help prevent using or saving over the same file

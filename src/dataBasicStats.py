@@ -55,13 +55,13 @@ if __name__ == '__main__':
     myFile.close()
     myData = [line.strip().split('\t') for line in myData]
     #Remove interactions with "NULL" actor or actee
-    myData = [line for line in myData if line[5] <> 'NULL' and line[7] <> 'NULL']
+    myData = [line for line in myData if line[5] != 'NULL' and line[7] != 'NULL']
     
     obsDict = groupedData(myData, observerIdx)
-    for (obs, obsLines) in obsDict.iteritems():
+    for (obs, obsLines) in iter(obsDict.items()):
         numData = len(obsLines)
         dateDict = groupedData(obsLines, dateIdx)
         numDistinctDates = len(dateDict.keys())
-        print obs, "had", numData, "agonisms in", numDistinctDates, "days"
-        print "\t", numData, "/", numDistinctDates, "=", (float(numData)/float(numDistinctDates)), "lines/day"
+        print(obs, "had", numData, "agonisms in", numDistinctDates, "days")
+        print("\t", numData, "/", numDistinctDates, "=", (float(numData)/float(numDistinctDates)), "lines/day")
     

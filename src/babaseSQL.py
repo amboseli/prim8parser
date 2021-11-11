@@ -66,7 +66,7 @@ def insertSAMPLES_SQL(date, stime, observer, stype, grp, sname, mins, programid,
         INSERT INTO babase.samples(date, stime, observer, stype, grp, sname, mins, programid, setupid, palmtop)
             VALUES('{0}','{1}','{2}','{3}',{4},'{5}',{6},{7},{8}, {9});
     '''.format(date, stime, observer, stype, grp, sname, mins, programid, setupid, palmtop)
-    print insLine
+    print(insLine)
     return insLine
 
 def insertPOINT_DATA_SQL(pntMin, activity, posture, ptime, foodcode=''):
@@ -93,7 +93,7 @@ def insertPOINT_DATA_SQL(pntMin, activity, posture, ptime, foodcode=''):
             VALUES((SELECT currval('samples_sid_seq'::regclass)), {0}, '{1}', '{2}', '{3}', '{4}');
         '''.format(pntMin, activity, posture, ptime, foodcode)
     
-    print insLine
+    print(insLine)
     return insLine
 
 def insertFPOINTS_SQL(kidcontact, kidsuckle):
@@ -106,7 +106,7 @@ def insertFPOINTS_SQL(kidcontact, kidsuckle):
         INSERT INTO babase.fpoints(pntid, kidcontact, kidsuckle)
             VALUES((SELECT currval('point_data_pntid_seq'::regclass)), '{0}', '{1}');
     '''.format(kidcontact, kidsuckle)
-    print insLine
+    print(insLine)
     return insLine
 
 def insertNEIGHBORS_SQL(neighborID, ncode):
@@ -135,7 +135,7 @@ def insertNEIGHBORS_SQL(neighborID, ncode):
             VALUES((SELECT currval('point_data_pntid_seq'::regclass)), '{0}', '{1}');
         '''.format(ncode, neighborID)
     
-    print insLine
+    print(insLine)
     return insLine
 
 def insertACTOR_ACTEES_SQL(inFocal, observer, date, start, actor, act, actee, handwritten='FALSE'):
@@ -170,7 +170,7 @@ def insertACTOR_ACTEES_SQL(inFocal, observer, date, start, actor, act, actee, ha
         INSERT INTO babase.actor_actees(observer, date, actor, act, actee, handwritten)
             VALUES('{0}', '{1}', '{2}', '{3}', '{4}', {5});
         '''.format(observer, date, actor, act, actee, handwritten)
-    print insLine
+    print(insLine)
     return insLine
 
 def insertALLMISCS_SQL(atime, txtPrefix, txt):
@@ -195,7 +195,7 @@ def insertALLMISCS_SQL(atime, txtPrefix, txt):
         INSERT INTO babase.allmiscs(sid, atime, txt)
             VALUES((SELECT currval('samples_sid_seq'::regclass)), '{0}', '{1}');
     '''.format(atime, fullText)
-    print insLine
+    print(insLine)
     return insLine
 
 def selectThisLine(dataLine):
@@ -214,5 +214,5 @@ def selectThisLine(dataLine):
         SELECT '{0}' as line;
     '''.format(thisLine)
     
-    print selLine
+    print(selLine)
     return selLine

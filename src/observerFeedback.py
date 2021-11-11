@@ -98,8 +98,8 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     
     Returns a single string that will include several line breaks.
     '''
-    print "Begin feedbackAlerts. First row of dataLines is:"
-    print dataLines[0]
+    print("Begin feedbackAlerts. First row of dataLines is:")
+    print(dataLines[0])
     
     alertLines = []
 
@@ -108,14 +108,14 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     alertLines.append(commentLine)
     
     # Check for focal samples with no points
-    print "Check for focal samples with no points"
+    print("Check for focal samples with no points")
     alertData = [kenyaFixLine(line) for line in theseWithoutThose(dataLines, focalAbbrev, [pntAbbrev])]
     alertData = ['\t'.join(line) for line in alertData]
     commentLine = writeAlert('Focal samples without points', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
     # Check for focal samples with >10 points
-    print "Check for focal samples with >10 points"
+    print("Check for focal samples with >10 points")
     alertData = []
     for (focal, count) in checkTooManyPoints(dataLines):
         focal = focal.strip().split('\t')
@@ -136,7 +136,7 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     alertLines.append(commentLine)
     
     # Check for in-sight points with no neighbors
-    print "Check for in-sight points with no neighbors"
+    print("Check for in-sight points with no neighbors")
     alertData = theseWithoutThose(dataLines, pntAbbrev, [neighborAbbrev], beforeThem = [focalAbbrev])
     alertData = [line for line in alertData if line[6] != outOfSightValue] #Exclude out-of-sight points
     alertData = [line for line in alertData if line not in checkPointMatchesFocal(dataLines)] #Exclude non-matching points
@@ -145,7 +145,7 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     alertLines.append(commentLine)
         
     # Second, points with >3 neighbors
-    print "Check for points with >3 neighbors"
+    print("Check for points with >3 neighbors")
     alertData = []
     for (point, neighbors) in checkNeighborsPerPoint(dataLines):
         if neighbors > 3:
@@ -157,7 +157,7 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     alertLines.append(commentLine)
     
     # Check for non-unique neighbors in juvenile samples
-    print "Check for non-unique neighbors in juvenile samples"
+    print("Check for non-unique neighbors in juvenile samples")
     alertData = [line for line in checkUniqueNeighbors(dataLines, [stypeJuv]) if len(line) > 0 and isType(line, pntAbbrev)]
     alertData = [kenyaFixLine(line) for line in alertData]
     alertData = ['\t'.join(line) for line in alertData]
@@ -165,14 +165,14 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     alertLines.append(commentLine)
     
     # Check for data where actor is actee, or focal is neighbor
-    print "Check for data where actor is actee"
+    print("Check for data where actor is actee")
     selfToSelf = checkActorIsActee(dataLines)
     alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, adlibAbbrev)]
     alertData = ['\t'.join(line) for line in alertData]
     commentLine = writeAlert('Adlibs where individual interacted with itself', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
-    print "Check for rows where focal is neighbor"
+    print("Check for rows where focal is neighbor")
     alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, neighborAbbrev)]
     alertData = ['\t'.join(line) for line in alertData]
     commentLine = writeAlert('Neighbor rows where focal is its own neighbor', alertData, showSpecifics) + '\n'
@@ -180,9 +180,9 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
         
     # Check for focals done that aren't in the log (if provided).
     # Exclude focals with no points.
-    if focalLogPath <> "":
+    if focalLogPath != "":
         # Then a log was provided. Do this check.
-        print "Check for focals done that aren't in the log"
+        print("Check for focals done that aren't in the log")
         alertData = getFocalsNotLogged(dataLines, focalLogPath)
         # This level of detail is not wanted, apparently
         # alertData = [line[0]+"\t"+line[2]+" point(s) in sight, out of "+line[1] for line in alertData if int(line[1]) > 0]
@@ -193,9 +193,9 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
         alertLines.append(commentLine)
     
     # Check for logged (as complete) focals that aren't in the data
-    if focalLogPath <> "":
+    if focalLogPath != "":
         # Then a log was provided. Do this check.
-        print "Check for logged (as complete) focals that aren't in the data"
+        print("Check for logged (as complete) focals that aren't in the data")
         alertData = []
         for line in getLoggedNotDone(dataLines, focalLogPath):
             line = line.strip().split('\t')
@@ -217,29 +217,29 @@ def makeFeedback (inFilePath, outFilePath, focalLogPath = ""):
     Prints a message that the process is complete.
     Returns nothing.
     '''    
-    print "Creating export file:", path.basename(outFilePath) 
+    print("Creating export file:", path.basename(outFilePath) )
     outFile = open(outFilePath,'w')
     
     outMsg = writeHeader(inFilePath) 
     outFile.write(outMsg + '\n\n')
     
-    print "Opening import file:", path.basename(inFilePath)
-    impFile = open(inFilePath, 'rU')
+    print("Opening import file:", path.basename(inFilePath))
+    impFile = open(inFilePath, 'r')
     impFile.readline() ## Skip the header line
     allEvents = impFile.readlines()
     impFile.close()
     
     allEvents =  [line.strip().split('\t') for line in allEvents]
     
-    print "Getting data summary"
+    print("Getting data summary")
     outMsg = observerDataSummary(allEvents)
     outFile.write(outMsg + '\n\n')
     
-    print "Getting errors and alerts summary"
+    print("Getting errors and alerts summary")
     outMsg = feedbackAlerts(allEvents, focalLogPath, showSpecifics=True)
     outFile.write(outMsg + '\n')
 
-    print "Closing export file"
+    print("Closing export file")
     outFile.close()
     outMsg = "Finished checking data in " + path.basename(inFilePath)
-    print outMsg
+    print(outMsg)
