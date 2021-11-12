@@ -26,26 +26,26 @@ def kenyaDateTime(strDateTime, useTime = True):
     thisStr = strDateTime[:]
     
     if not useTime: # Then only fetch the date
-    	thisStr = thisStr[:10] + ' 00:00:00'
-    	
-    	thisDate = datetime.strptime(thisStr, '%Y-%m-%d %H:%M:%S')
-    	return (datetime.strftime(thisDate, '%d%b%y')).upper()
+        thisStr = thisStr[:10] + ' 00:00:00'
+        
+        thisDate = datetime.strptime(thisStr, '%Y-%m-%d %H:%M:%S')
+        return (datetime.strftime(thisDate, '%d%b%y')).upper()
     
     thisDate = datetime.strptime(thisStr, '%Y-%m-%d %H:%M:%S')
     return (datetime.strftime(thisDate, '%d%b%y %H:%M:%S')).upper()
 
 def kenyaFixDateInLine(dataLine):
-	'''
-	Given dataLine--a single line from a processed prim8 data file that
-	has been stripped and split--replace the 'yyyy-mm-dd' date at
-	dataLine[2] with the date in the format preferred by our Kenyan
-	observers.
-	
-	Returns the list of strings, with the format changed at [2].
-	'''
-	dataLine[2] = kenyaDateTime(dataLine[2], False)
-	
-	return dataLine
+    '''
+    Given dataLine--a single line from a processed prim8 data file that
+    has been stripped and split--replace the 'yyyy-mm-dd' date at
+    dataLine[2] with the date in the format preferred by our Kenyan
+    observers.
+    
+    Returns the list of strings, with the format changed at [2].
+    '''
+    dataLine[2] = kenyaDateTime(dataLine[2], False)
+    
+    return dataLine
 
 def kenyaLinesPerDay(dataLines, sampleType='', typeName = ''):
     '''
@@ -78,7 +78,7 @@ def kenyaLinesPerDay(dataLines, sampleType='', typeName = ''):
         dateCounts[line[2]] += 1
     
     # Handle typeName, if provided.
-	lineType = typeName or sampleType or 'Line'
+    lineType = typeName or sampleType or 'Line'
 
     # Write the results
     resultInfo = []
@@ -86,52 +86,52 @@ def kenyaLinesPerDay(dataLines, sampleType='', typeName = ''):
     resultInfo.append(commentLine)
     
     for (date, count) in sorted(dateCounts.items(), key = lambda pair: pair[0]):
-    	kenyaDate = kenyaDateTime(date, False)
+        kenyaDate = kenyaDateTime(date, False)
         commentLine = '\t' + kenyaDate + ':\t' + str(count)
         resultInfo.append(commentLine)
     
     return '\n'.join(resultInfo)
 
 def removeExtraCols(dataLine, keepActActee = False):
-	'''
-	Given dataLine--a single line from a processed prim8 data file that
-	has been stripped and split--remove the values that have been deemed
-	as superfluous for our observers' needs.
-	
-	Assumes that dataLine is of the following format:
-	dataLine[0]		Sample Type
-	dataLine[1]		Observer
-	dataLine[2]		Date
-	dataLine[3]		Time, or Sample Start time
-	dataLine[4]		Group Abbreviation
-	dataLine[5]		Actor, or Focal
-	dataLine[6]		Sample Type, or Act
-	dataLine[7]		Sample End time, or Actee, or "NULL" (for PNTs)
-	dataLine[8]		Food code, neighbor code, or doesn't exist
-	
-	Returns a new list of strings, containing only the values from
-	positions 2, 3, and 5.  When "keepActActee" is True, also keeps
-	positions 6 and 7.
-	'''
-	outLine = []
-	outLine.append(dataLine[2])
-	outLine.append(dataLine[3])
-	outLine.append(dataLine[5])
-	
-	if keepActActee:
-		outLine.append(dataLine[6])
-		outLine.append(dataLine[7])
-	
-	return outLine
+    '''
+    Given dataLine--a single line from a processed prim8 data file that
+    has been stripped and split--remove the values that have been deemed
+    as superfluous for our observers' needs.
+    
+    Assumes that dataLine is of the following format:
+    dataLine[0]        Sample Type
+    dataLine[1]        Observer
+    dataLine[2]        Date
+    dataLine[3]        Time, or Sample Start time
+    dataLine[4]        Group Abbreviation
+    dataLine[5]        Actor, or Focal
+    dataLine[6]        Sample Type, or Act
+    dataLine[7]        Sample End time, or Actee, or "NULL" (for PNTs)
+    dataLine[8]        Food code, neighbor code, or doesn't exist
+    
+    Returns a new list of strings, containing only the values from
+    positions 2, 3, and 5.  When "keepActActee" is True, also keeps
+    positions 6 and 7.
+    '''
+    outLine = []
+    outLine.append(dataLine[2])
+    outLine.append(dataLine[3])
+    outLine.append(dataLine[5])
+    
+    if keepActActee:
+        outLine.append(dataLine[6])
+        outLine.append(dataLine[7])
+    
+    return outLine
 
 def kenyaFixLine(dataLine, keepActActee = False):
-	'''
-	Given dataLine--a single line from a processed prim8 data file that
-	has been stripped and split--fix its date and remove superfluous
-	columns.
-	
-	Returns a new list of strings.
-	'''
-	outLine = kenyaFixDateInLine(dataLine)
-	
-	return removeExtraCols(outLine, keepActActee)
+    '''
+    Given dataLine--a single line from a processed prim8 data file that
+    has been stripped and split--fix its date and remove superfluous
+    columns.
+    
+    Returns a new list of strings.
+    '''
+    outLine = kenyaFixDateInLine(dataLine)
+    
+    return removeExtraCols(outLine, keepActActee)
