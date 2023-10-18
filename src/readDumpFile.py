@@ -325,9 +325,9 @@ def writeInstance(dayTime, eventKey, masterDict, instanceObserver='NOT GIVEN'):
     currentGrpID = masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][0])][4] ##Get group ID number, based on the residence of the actor
     currentGrpName = getGroupAbbrev(masterDict, currentGrpID)
     outList.append(currentGrpName.upper())
-    actorID = masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][0])][1] ##Get actor
+    actorID = str(masterDict[p8individuals][(masterDict[p8behaviorinstances][eventKey][0])][1]) ##Get actor
     outList.append(actorID.upper())
-    actID = masterDict[p8behaviors][(masterDict[p8behaviorinstances][eventKey][1])][1]  ##Get act
+    actID = str(masterDict[p8behaviors][(masterDict[p8behaviorinstances][eventKey][1])][1])  ##Get act
     outList.append(actID.upper())
     if masterDict[p8behaviorinstances][eventKey][2] == '': ##There's no actee. We don't want to pass '' to the "individuals" dictionary
         acteeID = emptyAbbrev
