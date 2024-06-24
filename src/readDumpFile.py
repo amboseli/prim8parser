@@ -404,11 +404,11 @@ def getTabletLongName(tabletID):
     '''
     tabletID is a string used to indicate which tablet was used to collect data.
     
-    Looks up tabletID as a key in the "palmtops" dictionary (from constants.py).
-    Returns the corresponding value from the palmtops dictionary if it exists. Otherwise, returns tabletID. 
+    Looks up tabletID as a key in the "collection_systems" dictionary (from constants.py).
+    Returns the corresponding value from the collection_systems dictionary if it exists. Otherwise, returns tabletID. 
     '''
-    from constants import palmtops
-    return palmtops.get(tabletID,tabletID)
+    from constants import collection_systems
+    return collection_systems.get(tabletID,tabletID)
 
 
 def writeAll(outputFilePath, appName, appVersion, setupVersion, tabletID, masterDict):
@@ -425,8 +425,8 @@ def writeAll(outputFilePath, appName, appVersion, setupVersion, tabletID, master
         For import to Babase, the (appName + appVersion) string must be a PROGRAMIDS.Pid_string in Babase.
     setupVersion is a string that indicates which version of the Prim8 setup files (ethogram and valid modifiers) was used. 
         For import to Babase, the (appName + setupVersion) string must be a SETUPIDS.Sid_string in Babase.
-    tabletID is a string that indicates which Samsung tablet was used to collect the data. It is presumed to be a "key" in the "palmtops" dictionary from constants.
-        For import to Babase, the "Babase" value is fetched from the "palmtops" dictionary. If the tabletID doesn't exist, it's retained (not replaced), but won't 
+    tabletID is a string that indicates which Samsung tablet was used to collect the data. It is presumed to be a "key" in the "collection_systems" dictionary from constants.
+        For import to Babase, the "Babase" value is fetched from the "collection_systems" dictionary. If the tabletID doesn't exist, it's retained (not replaced), but won't 
             be ready for Babase.
     masterDict is the big dictionary of dictionaries that stores all the data.
     

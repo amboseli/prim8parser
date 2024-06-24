@@ -39,18 +39,18 @@ def lookupSetupID_SQL(sid_string):
                 (SELECT setupid FROM babase.setupids where sid_string='{0}')'''.format(sid_string)
     return setupIDLookUp
 
-def lookupPalmtop_SQL(descr):
+def lookupCollection_System_SQL(descr):
     '''
-    descr is a string, and should be a PALMTOPS.Descr value.
+    descr is a string, and should be a SAMPLES_COLLECTION_SYSTEMS.Descr value.
     
-    Returns a string: the SQL to look up the PALMTOPS.Palmtop for descr.
+    Returns a string: the SQL to look up the SAMPLES_COLLECTION_SYSTEMS.Collection_System for descr.
         The SQL is wrapped in parentheses, because this will only ever be used as a subquery.
     '''
-    palmtopLookUp = '''
-                (SELECT palmtop FROM babase.palmtops where descr='{0}')'''.format(descr)
-    return palmtopLookUp
+    collection_systemLookUp = '''
+                (SELECT collection_system FROM babase.samples_collection_systems where descr='{0}')'''.format(descr)
+    return collection_systemLookUp
 
-def insertSAMPLES_SQL(date, stime, observer, stype, grp, sname, mins, programid, setupid, palmtop):
+def insertSAMPLES_SQL(date, stime, observer, stype, grp, sname, mins, programid, setupid, collection_system):
     '''
     All parameters are strings, and they indicate values to be added to columns of the same name.
     
@@ -60,12 +60,12 @@ def insertSAMPLES_SQL(date, stime, observer, stype, grp, sname, mins, programid,
             2) mins (it's an integer)
             3) programid (this will contain a subquery)
             4) setupid (this will contain a subquery)
-            5) palmtop (this will contain a subquery)
+            5) collection_system (this will contain a subquery)
     '''
     insLine = '''
-        INSERT INTO babase.samples(date, stime, observer, stype, grp, sname, mins, programid, setupid, palmtop)
+        INSERT INTO babase.samples(date, stime, observer, stype, grp, sname, mins, programid, setupid, collection_system)
             VALUES('{0}','{1}','{2}','{3}',{4},'{5}',{6},{7},{8}, {9});
-    '''.format(date, stime, observer, stype, grp, sname, mins, programid, setupid, palmtop)
+    '''.format(date, stime, observer, stype, grp, sname, mins, programid, setupid, collection_system)
     print(insLine)
     return insLine
 

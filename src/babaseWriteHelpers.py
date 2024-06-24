@@ -230,7 +230,7 @@ def newFocal(dataLine, mins, prgID, setupID, tabletID):
     
     Returns a string: the SQL statement.
     '''
-    from babaseSQL import insertSAMPLES_SQL, lookupGroupNum_SQL, lookupPalmtop_SQL, lookupProgramID_SQL, lookupSetupID_SQL
+    from babaseSQL import insertSAMPLES_SQL, lookupGroupNum_SQL, lookupCollection_System_SQL, lookupProgramID_SQL, lookupSetupID_SQL
     from constants import stypesBabase
     
     date = dataLine[2]
@@ -241,9 +241,9 @@ def newFocal(dataLine, mins, prgID, setupID, tabletID):
     sname = dataLine[5]
     programid = lookupProgramID_SQL(prgID)
     setupid = lookupSetupID_SQL(setupID)
-    palmtop = lookupPalmtop_SQL(tabletID)
+    collection_system = lookupCollection_System_SQL(tabletID)
     
-    return insertSAMPLES_SQL(date, stime, observer, stype, grp, sname, mins, programid, setupid, palmtop)
+    return insertSAMPLES_SQL(date, stime, observer, stype, grp, sname, mins, programid, setupid, collection_system)
 
 def newPoint(dataLine, pntMin):
     '''

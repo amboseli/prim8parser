@@ -61,13 +61,14 @@ prim8Name = 'AMBOPRIM8'
 prim8Version = '1.151128'
 prim8Setup = 'DEC15' # Used to populate the "setupid" in babase. The name "setup" made more sense for Psion data. It makes less sense for Prim8.
 
-# Dictionary with abbreviations for all the tablets in use and their descriptions in Babase (PALMTOPS.Descr)
-palmtops = {}
-palmtops['SA'] = 'Samsung Tablet A'
-palmtops['SB'] = 'Samsung Tablet B'
-palmtops['SC'] = 'Samsung Tablet C'
-palmtops['SD'] = 'Samsung Tablet D'
-palmtops['SE'] = 'Samsung Tablet E'
+# Dictionary with abbreviations for all the tablets in use and their descriptions in Babase (SAMPLES_COLLECTION_SYSTEMS.Descr)
+collection_systems = {}
+collection_systems['SA'] = 'Samsung Tablet A'
+collection_systems['SB'] = 'Samsung Tablet B'
+collection_systems['SC'] = 'Samsung Tablet C'
+collection_systems['SD'] = 'Samsung Tablet D'
+collection_systems['SE'] = 'Samsung Tablet E'
+collection_systems['SF'] = 'Samsung Tablet F'
 
 # Used when compiling agonisms
 agonismCodes = [bb_agonism_A, bb_agonism_D, bb_agonism_O]
