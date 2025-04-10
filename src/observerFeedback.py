@@ -164,19 +164,20 @@ def feedbackAlerts(dataLines, focalLogPath = "", showSpecifics = True):
     commentLine = writeAlert('Juvenile points where you used adult female protocol for neighbors', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
     
-    # Check for data where actor is actee, or focal is neighbor
+    # Check for data where actor is actee
     print("Check for data where actor is actee")
     selfToSelf = checkActorIsActee(dataLines)
     alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, adlibAbbrev)]
     alertData = ['\t'.join(line) for line in alertData]
     commentLine = writeAlert('Adlibs where individual interacted with itself', alertData, showSpecifics) + '\n'
     alertLines.append(commentLine)
-    
-    print("Check for rows where focal is neighbor")
-    alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, neighborAbbrev)]
-    alertData = ['\t'.join(line) for line in alertData]
-    commentLine = writeAlert('Neighbor rows where focal is its own neighbor', alertData, showSpecifics) + '\n'
-    alertLines.append(commentLine)
+
+    # No need to check for this. Amboprim8 forbids it.
+    #print("Check for rows where focal is neighbor")
+    #alertData = [kenyaFixLine(line) for line in selfToSelf if isType(line, neighborAbbrev)]
+    #alertData = ['\t'.join(line) for line in alertData]
+    #commentLine = writeAlert('Neighbor rows where focal is its own neighbor', alertData, showSpecifics) + '\n'
+    #alertLines.append(commentLine)
         
     # Check for focals done that aren't in the log (if provided).
     # Exclude focals with no points.
