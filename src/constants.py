@@ -69,6 +69,9 @@ collection_systems['SC'] = 'Samsung Tablet C'
 collection_systems['SD'] = 'Samsung Tablet D'
 collection_systems['SE'] = 'Samsung Tablet E'
 collection_systems['SF'] = 'Samsung Tablet F'
+collection_systems['SG'] = 'Samsung Tablet G'
+collection_systems['SH'] = 'Samsung Tablet H'
+collection_systems['SI'] = 'Samsung Tablet I'
 
 # Used when compiling agonisms
 agonismCodes = [bb_agonism_A, bb_agonism_D, bb_agonism_O]
@@ -110,7 +113,7 @@ stypeOther = 'OTHER'
 # went wrong, so it's not added here.
 stypesBabase = {}
 stypesBabase[stypeAdultFem] = 'F'
-stypesBabase[stypeJuv] = 'J'
+stypesBabase[stypeJuv] = 'G' # As of 16 Sep 2024, this type changed to "Generic"
 
 # Focal activity that indicates feeding
 focalFeeding = 'F'
