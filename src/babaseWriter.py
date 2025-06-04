@@ -50,7 +50,7 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
     for line in dataLines:
         if line[0] == noteAbbrev:
             continue # Because we've already dealt with all the notes
-
+        
         outLine = selectThisLine(line)
         sqlOut.append(outLine)
         if line[0] == focalAbbrev:
@@ -70,7 +70,7 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
                     sqlOut.append(outLine)
                     outLine = newNote(note)
                     sqlOut.append(outLine)
-
+        
         elif line[0] == pntAbbrev:
             pntNum += 1
             nghNum = 0
@@ -78,7 +78,7 @@ def writeAll(dataFilePath, sqlFilePath, commitTransaction = False):
                 continue
             outLine = newPoint(line, pntNum)
             sqlOut.append(outLine)
-
+        
         elif line[0] == neighborAbbrev:
             nghNum += 1
             if neighborIsNull(line): # Then we don't want this false neighbor recorded
