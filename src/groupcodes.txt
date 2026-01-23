@@ -8,6 +8,8 @@
 2.212	kelly's b	KEB	kelly b
 2.120	mica's	MIC	mica
 2.110	narasha's	NAR	narasha
+2.111	najibu's	NAJ	najibu
+2.112	wrung's	WRU	wrung
 5.000	olkenya	OLK	olkenya
 13.100	sinya a	SIA	sinya a
 13.210	sinya b1	SB1	sinya b1

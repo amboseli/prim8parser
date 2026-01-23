@@ -72,6 +72,7 @@ collection_systems['SF'] = 'Samsung Tablet F'
 collection_systems['SG'] = 'Samsung Tablet G'
 collection_systems['SH'] = 'Samsung Tablet H'
 collection_systems['SI'] = 'Samsung Tablet I'
+collection_systems['SJ'] = 'Samsung Tablet J'
 
 # Used when compiling agonisms
 agonismCodes = [bb_agonism_A, bb_agonism_D, bb_agonism_O]
