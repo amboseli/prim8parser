@@ -52,7 +52,7 @@ class observerFeedbackGUI(Frame):
         e3.grid(row=2, column=1)
         
         # Define buttons
-        b1 = Button(root, text='Choose', command = lambda: self.getOpenFileAndAutofill(tv1, tv3))
+        b1 = Button(root, text='Choose', command = lambda: self.getOpenFileAndAutofill(tv1, tv2, tv3))
         b2 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv2))
         b3 = Button(root, text='Choose', command = lambda: self.getOpenFileName(tv3))
         b4 = Button(root, text='Go!', command = lambda: self.doTheFeedback(tv1, tv2, tv3))
@@ -74,18 +74,35 @@ class observerFeedbackGUI(Frame):
         print("Got file path:", filePath)
         textVariable.set(filePath)
     
-    def getOpenFileAndAutofill(self, textVariable1, textVariable2):
+    def getOpenFileAndAutofill(self, textVariable1, textVariable2, textVariable3):
         '''
-        Just like "getOpenFileName", but also suggests a file name and
-        inserts it into textVariable2.
+        Just like "getOpenFileName", but uses the result to try and predict
+        1) the name of a log file that inserts into textVariable2, and 2) the
+        name of a data summary file that inserts into textVariable3.
+        
+        Assumes the file name in textVariable1 is going to be formatted:
+            YYYYMM_OBS_alldata.txt
+            (Date then observer initials)
+        
+        Then textVariable2 becomes:
+            YYYYMM_OBS_Logs.txt
+        
+        And textVariable3 becomes:
+            YYYYMM_OBS_alldata_feedback.txt
         '''
         self.getOpenFileName(textVariable1)
         
         sourcePath = str(textVariable1.get())
-        summaryPath = sourcePath[:-4] + '_feedback.txt' # So "./filename.txt" suggests "./filename_feedback.txt"
+        
+        logPath = sourcePath[:-12] + '_Logs.txt'
+        
+        print("Suggesting log file path:", logPath)
+        textVariable2.set(logPath)
+        
+        summaryPath = sourcePath[:-4] + '_feedback.txt'
         
         print("Suggesting summary file path:", summaryPath)
-        textVariable2.set(summaryPath)
+        textVariable3.set(summaryPath)
         
     
     def endProgram(self, root):
